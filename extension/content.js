@@ -250,7 +250,7 @@
       ? advice.map((a) => `<div class="row adv ${a.level}"><span class="tag">${TAG[a.level]}</span><p>${esc(a.text)}</p></div>`).join("")
       : `<div class="row"><p class="muted" style="margin:0">바꿀 디스크가 없습니다.</p></div>`;
     const sel = res.tiers[res.selected];
-    const borrowed = res.statFrom && res.statFrom !== sel.label ? `<p class="fine">${esc(sel.label)} 탭에 주옵·부옵 칸이 없어 ${esc(res.statFrom)} 기준으로 판정합니다.</p>` : "";
+    const borrowed = res.statFrom && res.statFrom !== sel.label ? `<p class="fine">시트의 ${esc(sel.label)} 탭에는 주옵·부옵 기준이 없어서, ${esc(res.statFrom)} 기준으로 판정합니다.</p>` : "";
 
     shadow.innerHTML = `<style>${CSS}</style>
       <div class="panel${minimized ? " min" : ""}"${theme ? ` data-theme="${theme}"` : ""} role="dialog" aria-label="디스크 평가">
@@ -261,13 +261,13 @@
           <button class="icon" id="close" aria-label="닫기">✕</button>
         </header>
         <div class="body">
-          ${res.matched ? "" : `<p class="fine">시트에서 이 에이전트를 찾지 못했습니다. 게임 응답 이름: “${esc(lastAvatar.name_mi18n)}” / “${esc(lastAvatar.full_name_mi18n)}” (id ${esc(lastAvatar.id)})</p>`}
+          ${res.matched ? "" : `<p class="fine">시트에서 이 에이전트를 찾지 못했습니다. 전적 페이지에 표시된 이름: “${esc(lastAvatar.name_mi18n)}” / “${esc(lastAvatar.full_name_mi18n)}” (id ${esc(lastAvatar.id)})</p>`}
           <section><div class="segs" role="group" aria-label="평가 기준">${["basic", "good", "max"].map((k) => seg(k, res.tiers[k], res.selected)).join("")}</div></section>
           ${summary(res)}
           <section><h3>조언</h3><div class="card">${adviceHtml}</div></section>
           ${setSection(res)}
           <section><h3>장착 디스크</h3><div class="discs">${res.discs.map(discRow).join("")}</div>
-            <p class="fine" style="margin-top:8px">오른쪽 숫자는 유효 부옵 강화 횟수(가중치 반영)입니다. 배경이 칠해진 부옵이 유효 옵션이고, +n은 강화된 횟수입니다.</p>${borrowed}</section>
+            <p class="fine" style="margin-top:8px">오른쪽 숫자는 유효한 부옵이 강화된 횟수이며, 가중치를 반영해서 계산합니다. 배경색이 있는 부옵이 유효 옵션이고, +n은 그 부옵이 강화된 횟수입니다.</p>${borrowed}</section>
           ${notes ? `<details><summary>시트 원문 메모</summary><pre>${esc(notes)}</pre></details>` : ""}
           <p class="fine">기준 시트 · ${esc(window.ZZZ_BENCHMARK.version || "")}</p>
         </div>

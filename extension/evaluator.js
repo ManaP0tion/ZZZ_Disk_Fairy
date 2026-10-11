@@ -183,7 +183,7 @@
   }
 
   function checkTier(entry, stats, c, tierLabel, agentName) {
-    if (!entry) return { pass: null, checks: [], reason: `${tierLabel} 탭에 ${agentName} 행이 없습니다. 시트 원본에 이 등급 기준이 작성되지 않았습니다.`, short: "시트에 없음" };
+    if (!entry) return { pass: null, checks: [], reason: `시트의 ${tierLabel} 탭에는 ${agentName} 기준이 작성되어 있지 않습니다.`, short: "시트에 없음" };
     const cc = { ...c, entry };
     const checks = [], missing = [];
     for (const t of pickTargets(entry.targets, cc, (t) => t.stat)) {
@@ -202,13 +202,13 @@
     if (!checks.length) {
       const raw = [entry.targetsRaw, entry.critRaw].filter(Boolean).join(" / ");
       let reason, short;
-      if (!raw) { reason = `시트의 ${tierLabel} 목표 스탯 칸이 비어 있습니다. 주옵·부옵·세트 판정만 합니다.`; short = "목표 칸 비어 있음"; }
-      else if (missing.length) { reason = `시트 목표(${missing.join(", ")})에 해당하는 스탯이 게임 응답에 없습니다.`; short = "스탯 없음"; }
+      if (!raw) { reason = `시트의 ${tierLabel} 목표 스탯 칸이 비어 있어서, 주옵·부옵·세트만 평가합니다.`; short = "목표 칸 비어 있음"; }
+      else if (missing.length) { reason = `시트에 적힌 목표 스탯(${missing.join(", ")})을 전적 데이터에서 찾을 수 없습니다.`; short = "스탯 없음"; }
       else { reason = `시트 표기 “${raw}”를 수치 기준으로 해석하지 못했습니다.`; short = "해석 불가"; }
       return { pass: null, checks, reason, short };
     }
     const assumed = checks.filter((x) => x.assumed && x.cond).map((x) => x.cond.text || `${x.cond.slot}번 주옵 ${x.cond.main}`);
-    const note = assumed.length ? `조건(${[...new Set(assumed)].join(", ")})을 확인할 수 없어 첫 번째 기준을 적용했습니다.` : null;
+    const note = assumed.length ? `장착 정보만으로는 조건(${[...new Set(assumed)].join(", ")})을 확인할 수 없어서, 시트에 첫 번째로 적힌 목표를 적용했습니다.` : null;
     return { pass: checks.every((x) => x.gap <= 0), checks, note };
   }
 
@@ -242,7 +242,7 @@
         d.mainAllowed = (statRef.mains[d.slot] || []);
         d.mainOk = allowed.length ? allowed.includes(d.main && d.main.key) : null;
         if (d.mainOk === false)
-          advice.push({ level: "high", text: `${d.slot}번 주옵이 ${d.main.label}입니다. 권장: ${d.mainAllowed.join(" / ")}` });
+          advice.push({ level: "high", text: `${d.slot}번 주옵이 ${d.main.label}입니다. 권장 주옵은 ${d.mainAllowed.join(" / ")}입니다.` });
       }
     }
     const missing = [1, 2, 3, 4, 5, 6].filter((s) => !discs.some((d) => d.slot === s));
@@ -259,19 +259,19 @@
       if (ref.set4 && ref.set4.length) {
         setInfo.set4Ok = !!four && ref.set4.some((t) => setMatches(t, four));
         if (!setInfo.set4Ok)
-          advice.push({ level: "mid", text: `4세트가 ${four ? four : "없음"}입니다. 권장: ${ref.set4.join(" / ")}` });
+          advice.push({ level: "mid", text: `${four ? `4세트가 ${four}입니다.` : "4세트 효과가 없습니다."} 권장 4세트는 ${ref.set4.join(" / ")}입니다.` });
       }
       if (ref.set2 && ref.set2.length) {
         setInfo.set2Ok = twos.some((n) => ref.set2.some((t) => setMatches(t, n)));
         if (!setInfo.set2Ok)
-          advice.push({ level: "mid", text: `2세트가 ${twos.length ? twos.join(", ") : "없음"}입니다. 권장: ${ref.set2.join(" / ")}` });
+          advice.push({ level: "mid", text: `${twos.length ? `2세트가 ${twos.join(", ")}입니다.` : "2세트 효과가 없습니다."} 권장 2세트는 ${ref.set2.join(" / ")}입니다.` });
       }
     }
 
     // 3) 낮은 점수 디스크
     const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).sort((a, b) => a.eff - b.eff);
     weak.forEach((d, i) =>
-      advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크 교체 후보: 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
+      advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크는 교체를 고려해 보세요. 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
     );
 
     // 4) 등급별 목표 스탯
@@ -291,7 +291,7 @@
       advice.push({ level: "info", text: `${tiers[sel].label} 기준 목표 스탯을 모두 달성했습니다.` });
     }
     for (const c of (selRes && selRes.checks) || []) {
-      if (c.max && c.cur > c.max) advice.push({ level: "info", text: `${c.label} ${c.cur}로 권장 상한 ${c.max}을 넘었습니다. 시트 메모를 확인하세요.` });
+      if (c.max && c.cur > c.max) advice.push({ level: "info", text: `${c.label} 수치(${c.cur})가 권장 상한(${c.max})을 넘었습니다. 시트 메모를 확인하세요.` });
     }
 
     const order = { high: 0, mid: 1, low: 2, info: 3 };

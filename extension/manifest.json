@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ZZZ 디스크 어드바이저",
   "version": "0.1.0",
-  "description": "HoYoLAB 전적 페이지에서 에이전트를 열면 장착 디스크를 세팅 시트 기준으로 평가합니다.",
+  "description": "HoYoLAB 전적 페이지에서 에이전트를 열면 장착한 디스크를 세팅 시트 기준으로 평가합니다.",
   "content_scripts": [
     {
       "matches": [

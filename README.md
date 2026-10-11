@@ -1,33 +1,79 @@
 # ZZZ 디스크 어드바이저
 
-HoYoLAB 전적 페이지(act.hoyolab.com/app/zzz-game-record)에서 에이전트 상세를 열면,
-페이지가 원래 받아오는 `avatar/info` 응답을 가로채 장착 디스크를 세팅 시트 기준으로 평가합니다.
-확장이 직접 API를 추가 호출하지 않습니다.
+젠레스 존 제로(ZZZ) 에이전트가 장착한 디스크가 괜찮은지 알려주는 크롬 확장 프로그램입니다.
 
-## 구조
-- `extension/inject.js` 페이지 컨텍스트에서 fetch/XHR 응답 복사 → postMessage
-- `extension/content.js` 평가 실행, 오른쪽 패널(Shadow DOM) 렌더링
-- `extension/evaluator.js` 평가 엔진 (주옵 판정, 세트 판정, 유효 강화 횟수, 등급별 목표 스탯)
-- `extension/benchmark.js` 시트에서 자동 생성된 기준 데이터
-- `extension/suit-icons.js` 세트명 → 원형 디스크 이미지 URL 30종 (HoYoWiki 디스크 문서의 '위치' 이미지)
-- `tools/convert.py` xlsx → benchmark.js 변환
-- `test/run.js` 엔진 테스트 (`node test/run.js`)
+HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에 평가 패널이 나타납니다.
+패널에서는 다음 내용을 확인할 수 있습니다.
 
-## 설치
-1. chrome://extensions → 개발자 모드 ON → "압축해제된 확장 프로그램을 로드합니다" → `extension` 폴더 선택
-2. 전적 페이지를 새로고침하고 에이전트를 클릭
+- 디스크 6개 각각의 점수 (우수 / 양호 / 보통 / 교체 후보)
+- 주옵션이 권장 옵션과 맞는지 여부
+- 권장 2세트·4세트와 지금 장착한 세트 비교
+- 목표 스탯(치명타, 관통 등)까지 얼마나 부족한지
 
-## 시트 갱신
+평가 기준은 [ZZZ 세팅 시트](https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856)를 따릅니다. 시트 제작자에게 허락을 받고 사용하고 있습니다.
+
+## 설치 방법
+
+1. 이 저장소를 내려받습니다. (초록색 `Code` 버튼 → `Download ZIP` → 압축 해제)
+2. 크롬 주소창에 `chrome://extensions`를 입력합니다.
+3. 오른쪽 위의 **개발자 모드**를 켭니다.
+4. **압축해제된 확장 프로그램을 로드합니다**를 누르고, 내려받은 폴더 안의 `extension` 폴더를 선택합니다.
+
+## 사용 방법
+
+1. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. (이미 열려 있었다면 새로고침합니다.)
+2. 에이전트 목록에서 평가하고 싶은 에이전트를 클릭합니다.
+3. 오른쪽에 나타난 패널에서 결과를 확인합니다.
+
+패널 상단에서 기준 등급을 바꿀 수 있습니다.
+
+| 등급 | 의미 |
+|---|---|
+| 응애 | 입문자 기준 |
+| 이잘키 | 일반적인 기준선 |
+| 악귀 | 고점 기준 |
+
+## 점수는 어떻게 계산하나요?
+
+부옵션이 쓸모 있는 옵션에 몇 번 강화되었는지를 셉니다.
+
+- 해당 에이전트에게 유효한 부옵션 강화 1회 = 1점
+- 후순위 부옵션이나 깡 공격력/체력/방어력 강화 1회 = 0.5점
+- 합계가 **6점 이상이면 우수**, 4점 이상이면 양호, 2.5점 이상이면 보통, 그 미만이면 교체 후보로 표시합니다.
+
+## 개인정보와 안전성
+
+확장 프로그램은 HoYoLAB 서버에 별도로 요청을 보내지 않습니다.
+전적 페이지가 원래 불러오는 데이터를 그대로 읽어서 평가하며, 어떤 정보도 외부로 전송하지 않습니다.
+
+---
+
+## 개발자용
+
+### 파일 구성
+
+| 파일 | 역할 |
+|---|---|
+| `extension/inject.js` | 페이지가 받아오는 `avatar/info` 응답을 복사해서 content.js에 전달 |
+| `extension/content.js` | 평가를 실행하고 오른쪽 패널을 그림 (Shadow DOM) |
+| `extension/evaluator.js` | 평가 엔진 (주옵·세트 판정, 유효 강화 횟수, 목표 스탯) |
+| `extension/benchmark.js` | 시트에서 자동 생성한 기준 데이터 |
+| `extension/suit-icons.js` | 세트 이름 → 디스크 이미지 URL |
+| `tools/convert.py` | 시트(xlsx) → benchmark.js 변환 |
+| `test/run.js` | 엔진 테스트 |
+
+### 시트 갱신
+
+원본 시트를 xlsx로 내려받아 `data/sheet.xlsx`에 둔 뒤 실행합니다. (원본 시트는 저장소에 커밋하지 않습니다.)
+
 ```
 python3 tools/convert.py data/sheet.xlsx extension/benchmark.js
 ```
-그 뒤 chrome://extensions에서 새로고침.
 
-## 평가 규칙 (MVP)
-- 기준 탭: 응애(입문) / 세팅=이잘키(기준선) / 악귀(고점)
-- 주옵·부옵 기준은 이잘키 탭(없으면 응애)
-- 디스크 점수 = Σ(가중치 × 해당 부옵 강화 횟수). 유효 부옵 1.0, (후순위) 0.5, 깡 공/체/방 0.5
-- 6 이상 우수 / 4 이상 양호 / 2.5 이상 보통 / 그 미만 교체 후보
-- 목표 스탯의 "(5번 주옵 공퍼)" 같은 조건은 실제 장착 주옵을 보고 적용
+그다음 `chrome://extensions`에서 확장 프로그램을 새로고침합니다.
 
-시트 출처: ZZZ 세팅 시트 (작성자 허락 없이 공개 배포하지 말 것)
+### 테스트
+
+```
+node test/run.js
+```
