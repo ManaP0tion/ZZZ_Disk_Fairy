@@ -44,8 +44,8 @@
     --surface: #f5f5f7; --header: rgba(245, 245, 247, 0.8); --card: #ffffff;
     --hairline: #e0e0e0; --divider: #f0f0f0; --chip: rgba(210, 210, 215, 0.64);
     --valid-bg: #f5f5f7; --meter-off: #e0e0e0;
-    --display: "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
-    --text: "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    --display: "Pretendard Variable", Pretendard, "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    --text: "Pretendard Variable", Pretendard, "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
     position: fixed; top: 72px; right: 24px; z-index: 2147483647;
     width: 400px; max-height: calc(100vh - 96px); overflow: auto; overscroll-behavior: contain;
     background: var(--surface); border: 1px solid var(--hairline); border-radius: 18px;
@@ -166,6 +166,13 @@
     if (host && document.contains(host)) return;
     host = document.createElement("div");
     host.id = "zzz-disc-advisor";
+    // @font-face는 shadow DOM 안에서 안 먹으니 문서에 붙인다
+    if (!document.getElementById("zzz-pretendard")) {
+      const link = document.createElement("link");
+      link.id = "zzz-pretendard"; link.rel = "stylesheet";
+      link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css";
+      (document.head || document.documentElement).appendChild(link);
+    }
     shadow = host.attachShadow({ mode: "open" });
     (document.body || document.documentElement).appendChild(host);
   }
