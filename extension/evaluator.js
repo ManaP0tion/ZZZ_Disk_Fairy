@@ -1,0 +1,306 @@
+// 디스크 평가 엔진. 브라우저(window.ZZZEval)와 Node(module.exports) 양쪽에서 동작.
+(function (root) {
+  const STAT_LABEL = {
+    "ATK%": "공격력%", ATK: "공격력", "HP%": "체력%", HP: "체력", "DEF%": "방어력%", DEF: "방어력",
+    CR: "치명타 확률", CD: "치명타 피해", AP: "이상 마스터리", AM: "이상 장악력", PENR: "관통률",
+    PEN: "관통 수치", ER: "에너지 회복", IMP: "충격력", SHEER: "관입력",
+  };
+  const label = (k) => STAT_LABEL[k] || (k.startsWith("DMG_") ? k.slice(4) + " 피해" : k);
+
+  // 시트 표기 / API 표기를 공통 키로 정규화
+  function statKey(raw, pct) {
+    let s = String(raw).replace(/\(.*?\)|\[.*?\]/g, "").replace(/\s/g, "");
+    const isPct = pct || s.endsWith("%");
+    s = s.replace(/%$/, "");
+    if (s === "공퍼") return "ATK%";
+    if (s === "체퍼") return "HP%";
+    if (/^(치명타확률|치확)/.test(s)) return "CR";
+    if (/^(치명타피해|치피)/.test(s)) return "CD";
+    if (/^(이상마스터리|이상마)/.test(s)) return "AP";
+    if (/^이상장악력/.test(s)) return "AM";
+    if (/^관통률/.test(s)) return "PENR";
+    if (/^관통(수치)?$/.test(s)) return "PEN";
+    if (/에너지/.test(s)) return "ER";
+    if (/^충격력/.test(s)) return "IMP";
+    if (/^관입력/.test(s)) return "SHEER";
+    const el = s.match(/(물리|불|얼음|전기|에테르|바람|현묵)/);
+    if (el && /피해/.test(s)) return "DMG_" + el[1];
+    if (/^(공격력|공)$/.test(s)) return isPct ? "ATK%" : "ATK";
+    if (/^(체력|HP)$/i.test(s)) return isPct ? "HP%" : "HP";
+    if (/^(방어력|방)$/.test(s)) return isPct ? "DEF%" : "DEF";
+    return s;
+  }
+
+  const num = (v) => {
+    const n = parseFloat(String(v ?? "").replace(/[,%]/g, ""));
+    return isNaN(n) ? null : n;
+  };
+  const squash = (s) => String(s).replace(/\s|\[.*?\]/g, "");
+
+  // 시트 약칭(카재, 고요별 등)과 정식 세트명 매칭: 포함 또는 첫 글자가 같은 부분수열
+  function setMatches(token, suitName) {
+    const t = squash(token), n = squash(suitName);
+    if (!t || !n) return false;
+    if (n.includes(t)) return true;
+    if (t.length < 2 || t[0] !== n[0]) return false;
+    let i = 0;
+    for (const ch of n) if (ch === t[i]) i++;
+    return i === t.length;
+  }
+
+  // 이름 정규화: 공백·가운뎃점·마침표·낫표 제거 ("0호·엔비" = "0호 엔비", "「시드」" = "시드")
+  const normName = (s) => String(s || "").replace(/[\s·・.,「」『』\[\]()]/g, "");
+  // 게임 내 이름과 시트 표기가 다른 캐릭터 (정규화된 API 이름 → 정규화된 시트 이름)
+  const NAME_ALIAS = { "스타라이트빌리": "S빌리", "빌리스타라이트": "S빌리" };
+
+  function findAgent(tier, avatar) {
+    if (!tier) return null;
+    const keys = new Set();
+    for (const n of [avatar.name_mi18n, avatar.full_name_mi18n].filter(Boolean)) {
+      const k = normName(n);
+      keys.add(k);
+      if (NAME_ALIAS[k]) keys.add(NAME_ALIAS[k]);
+      if (k.includes("스타라이트") && k.includes("빌리")) keys.add("S빌리");
+    }
+    // 부분 일치는 쓰지 않는다 ("0호 엔비"가 "엔비"로, "스타라이트 빌리"가 "빌리"로 잘못 붙는 문제)
+    return (tier.agents || []).find((a) => keys.has(normName(a.name))) || null;
+  }
+
+  function parseDisc(e) {
+    const main = e.main_properties && e.main_properties[0];
+    return {
+      slot: e.equipment_type,
+      name: e.name,
+      icon: e.icon || null,
+      set: e.equip_suit && e.equip_suit.name,
+      level: e.level,
+      rarity: e.rarity,
+      main: main ? { key: statKey(main.property_name, String(main.base).includes("%")), label: main.property_name, value: main.base } : null,
+      subs: (e.properties || []).map((p) => ({
+        key: statKey(p.property_name, String(p.base).includes("%")),
+        label: p.property_name + (String(p.base).includes("%") ? "%" : ""),
+        value: p.base,
+        rolls: p.level || 1,
+      })),
+    };
+  }
+
+  function weightsFor(entry) {
+    const w = {};
+    for (const s of (entry && entry.subs) || []) {
+      const k = statKey(s.name, s.name.includes("%"));
+      let v = s.weight;
+      if (k === "ATK" || k === "HP" || k === "DEF") v = Math.min(v, 0.5); // 깡옵은 절반
+      w[k] = Math.max(w[k] || 0, v);
+    }
+    return w;
+  }
+
+  function discGrade(eff) {
+    if (eff >= 6) return { key: "great", text: "우수" };
+    if (eff >= 4) return { key: "ok", text: "양호" };
+    if (eff >= 2.5) return { key: "meh", text: "보통" };
+    return { key: "bad", text: "교체 후보" };
+  }
+
+  function finalStats(avatar) {
+    const out = {};
+    for (const p of avatar.properties || []) {
+      const v = p.final ?? p.base;
+      const k = statKey(p.property_name, String(v).includes("%") && !/치명타|관통률|피해/.test(p.property_name) ? true : false);
+      // 최종 스탯은 공격력/체력/방어력이 깡수치(최종값)로 나오므로 ATK/HP/DEF 키로 저장
+      const key = k.replace("%", "");
+      out[key] = num(v);
+    }
+    return out;
+  }
+
+  const MAIN_GROUP = { 치명: ["CR", "CD"] };
+  const stripTag = (s) => String(s).replace(/\[.*?\]/g, "").trim();
+  // 시트 W-엔진 칸에서 "[전엔]" 또는 "[휴고]" 같은 태그가 붙은 엔진 이름 찾기
+  const engineByTag = (entry, tag) => {
+    const w = ((entry && entry.wengine) || []).find((x) => x.includes(`[${tag}]`));
+    return w ? stripTag(w) : null;
+  };
+
+  // 조건 판정: true(충족) / false(불충족) / null(판정 불가)
+  function condOk(cond, c) {
+    if (!cond) return true;
+    const weapon = c.weapon;
+    const wm = (name) => (weapon && name ? setMatches(name, weapon) || setMatches(weapon, name) : null);
+    switch (cond.type || "main") {
+      case "main": {
+        const d = c.discs.find((x) => x.slot === cond.slot);
+        return !!(d && d.main && d.main.key === statKey(cond.main, true));
+      }
+      case "mains456":
+        return cond.mains.every((m, i) => {
+          const d = c.discs.find((x) => x.slot === 4 + i);
+          if (!d || !d.main) return false;
+          return (MAIN_GROUP[m] || [statKey(m, true)]).includes(d.main.key) || (m === "속성피해" && d.main.key.startsWith("DMG_"));
+        });
+      case "rank":
+        if (c.rank == null) return null;
+        return cond.op === "<=" ? c.rank <= cond.n : c.rank >= cond.n;
+      case "set":
+        return cond.sets.some((t) => Object.keys(c.setCounts).some((n) => setMatches(t, n) && c.setCounts[n] >= cond.pc));
+      case "note": {
+        const t = cond.text.replace(/\s*(착용 시만|착용 시|시)$/, "").trim();
+        if (!weapon && /엔|엔진/.test(t)) return null;
+        if (t === "전엔") return wm(engineByTag(c.entry, "전엔"));
+        if (t === "비전엔") { const r = wm(engineByTag(c.entry, "전엔")); return r == null ? null : !r; }
+        let m = t.match(/^(.+?) 엔진$/);
+        if (m && !/치확|공퍼/.test(m[1])) { const e = engineByTag(c.entry, m[1]); return e ? wm(e) : null; }
+        const parts = t.split("+").map((x) => x.trim());
+        const res = parts.map((p) => {
+          if (Object.keys(c.setCounts).some((n) => setMatches(p, n) && c.setCounts[n] >= 2)) return true;
+          const w = ((c.entry && c.entry.wengine) || []).map(stripTag).find((x) => setMatches(p, x));
+          if (w) return wm(w);
+          return null;
+        });
+        if (res.some((r) => r === false)) return false;
+        return res.every((r) => r === true) ? true : null;
+      }
+    }
+    return null;
+  }
+
+  // 같은 스탯에 대해 조건 충족 항목 우선 → 무조건 항목 → (조건만 있고 판정 불가/불충족이면) 첫 항목을 가정
+  function pickTargets(list, c, keyOf) {
+    const by = {};
+    for (const t of list || []) {
+      const k = keyOf(t);
+      (by[k] = by[k] || []).push(t);
+    }
+    const res = [];
+    for (const k in by) {
+      const withCond = by[k].filter((t) => t.cond && condOk(t.cond, c) === true);
+      const plain = by[k].filter((t) => !t.cond);
+      const chosen = withCond[0] || plain[0] || (by[k][0] && { ...by[k][0], assumed: true });
+      if (chosen) res.push(chosen);
+    }
+    return res;
+  }
+
+  function checkTier(entry, stats, c, tierLabel, agentName) {
+    if (!entry) return { pass: null, checks: [], reason: `${tierLabel} 탭에 ${agentName} 행이 없습니다. 시트 원본에 이 등급 기준이 작성되지 않았습니다.`, short: "시트에 없음" };
+    const cc = { ...c, entry };
+    const checks = [], missing = [];
+    for (const t of pickTargets(entry.targets, cc, (t) => t.stat)) {
+      const cur = stats[t.stat];
+      if (cur == null) { missing.push(label(t.stat)); continue; }
+      checks.push({ stat: t.stat, label: label(t.stat), need: t.min, max: t.max, cur, gap: Math.max(0, t.min - cur), raw: t.raw, assumed: !!t.assumed, cond: t.cond });
+    }
+    const crit = pickTargets(entry.crit, cc, () => "crit")[0];
+    if (crit) {
+      for (const k of ["CR", "CD"]) {
+        if (crit[k] == null) continue;
+        if (stats[k] == null) { missing.push(label(k)); continue; }
+        checks.push({ stat: k, label: label(k), need: crit[k], cur: stats[k], gap: Math.max(0, +(crit[k] - stats[k]).toFixed(1)), raw: crit.raw, pct: true, assumed: !!crit.assumed, cond: crit.cond });
+      }
+    }
+    if (!checks.length) {
+      const raw = [entry.targetsRaw, entry.critRaw].filter(Boolean).join(" / ");
+      let reason, short;
+      if (!raw) { reason = `시트의 ${tierLabel} 목표 스탯 칸이 비어 있습니다. 주옵·부옵·세트 판정만 합니다.`; short = "목표 칸 비어 있음"; }
+      else if (missing.length) { reason = `시트 목표(${missing.join(", ")})에 해당하는 스탯이 게임 응답에 없습니다.`; short = "스탯 없음"; }
+      else { reason = `시트 표기 “${raw}”를 수치 기준으로 해석하지 못했습니다.`; short = "해석 불가"; }
+      return { pass: null, checks, reason, short };
+    }
+    const assumed = checks.filter((x) => x.assumed && x.cond).map((x) => x.cond.text || `${x.cond.slot}번 주옵 ${x.cond.main}`);
+    const note = assumed.length ? `조건(${[...new Set(assumed)].join(", ")})을 확인할 수 없어 첫 번째 기준을 적용했습니다.` : null;
+    return { pass: checks.every((x) => x.gap <= 0), checks, note };
+  }
+
+  function evaluate(avatar, bench, sel) {
+    sel = sel || "good";
+    const T = bench.tiers;
+    const entries = { basic: findAgent(T.basic, avatar), good: findAgent(T.good, avatar), max: findAgent(T.max, avatar) };
+    // 선택한 등급 기준. 악귀 탭처럼 주옵/부옵 칸이 없으면 이잘키 → 응애 순으로 빌려온다.
+    const statRef = [entries[sel], entries.good, entries.basic].find((e) => e && e.mains) || null;
+    const setRef = [entries[sel], entries.good, entries.basic].find((e) => e && e.set4 && e.set4.length) || null;
+    const ref = entries[sel] || statRef || setRef;
+    const tierLabelOf = (e) => ["basic", "good", "max"].map((k) => (entries[k] === e ? T[k].label : null)).find(Boolean);
+    const discs = (avatar.equip || []).map(parseDisc).sort((a, b) => a.slot - b.slot);
+    const stats = finalStats(avatar);
+    const weights = weightsFor(statRef);
+    const advice = [];
+
+    // 1) 디스크별 점수 + 주옵 판정
+    for (const d of discs) {
+      d.eff = 0;
+      d.totalRolls = 0;
+      for (const s of d.subs) {
+        s.weight = weights[s.key] || 0;
+        d.eff += s.weight * s.rolls;
+        d.totalRolls += s.rolls;
+      }
+      d.eff = +d.eff.toFixed(1);
+      d.grade = discGrade(d.eff);
+      if (statRef && d.slot >= 4 && d.slot <= 6) {
+        const allowed = (statRef.mains[d.slot] || []).map((m) => statKey(m, true));
+        d.mainAllowed = (statRef.mains[d.slot] || []);
+        d.mainOk = allowed.length ? allowed.includes(d.main && d.main.key) : null;
+        if (d.mainOk === false)
+          advice.push({ level: "high", text: `${d.slot}번 주옵이 ${d.main.label}입니다. 권장: ${d.mainAllowed.join(" / ")}` });
+      }
+    }
+    const missing = [1, 2, 3, 4, 5, 6].filter((s) => !discs.some((d) => d.slot === s));
+    if (missing.length) advice.unshift({ level: "high", text: `${missing.join(", ")}번 슬롯이 비어 있습니다.` });
+
+    // 2) 세트 판정
+    const counts = {};
+    for (const d of discs) if (d.set) counts[d.set] = (counts[d.set] || 0) + 1;
+    const four = Object.keys(counts).find((n) => counts[n] >= 4);
+    const twos = Object.keys(counts).filter((n) => n !== four && counts[n] >= 2);
+    const setInfo = { counts, four, twos, set4Ok: null, set2Ok: null };
+    if (setRef) {
+      const ref = setRef;
+      if (ref.set4 && ref.set4.length) {
+        setInfo.set4Ok = !!four && ref.set4.some((t) => setMatches(t, four));
+        if (!setInfo.set4Ok)
+          advice.push({ level: "mid", text: `4세트가 ${four ? four : "없음"}입니다. 권장: ${ref.set4.join(" / ")}` });
+      }
+      if (ref.set2 && ref.set2.length) {
+        setInfo.set2Ok = twos.some((n) => ref.set2.some((t) => setMatches(t, n)));
+        if (!setInfo.set2Ok)
+          advice.push({ level: "mid", text: `2세트가 ${twos.length ? twos.join(", ") : "없음"}입니다. 권장: ${ref.set2.join(" / ")}` });
+      }
+    }
+
+    // 3) 낮은 점수 디스크
+    const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).sort((a, b) => a.eff - b.eff);
+    weak.forEach((d, i) =>
+      advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크 교체 후보: 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
+    );
+
+    // 4) 등급별 목표 스탯
+    const tiers = {};
+    const weaponName = avatar.weapon && (avatar.weapon.name || avatar.weapon.name_mi18n);
+    const ctxBase = { discs, rank: avatar.rank ?? null, setCounts: counts, weapon: weaponName || null };
+    for (const k of ["basic", "good", "max"])
+      tiers[k] = { label: T[k].label, entry: entries[k], result: checkTier(entries[k], stats, ctxBase, T[k].label, avatar.name_mi18n) };
+    const selRes = tiers[sel] && tiers[sel].result;
+    if (selRes && selRes.pass === false) {
+      const gaps = selRes.checks.filter((c) => c.gap > 0);
+      advice.push({
+        level: "info",
+        text: `${tiers[sel].label} 기준까지: ` + gaps.map((c) => `${c.label} ${c.pct ? c.gap + "%" : Math.ceil(c.gap)} 부족`).join(", "),
+      });
+    } else if (selRes && selRes.pass === true) {
+      advice.push({ level: "info", text: `${tiers[sel].label} 기준 목표 스탯을 모두 달성했습니다.` });
+    }
+    for (const c of (selRes && selRes.checks) || []) {
+      if (c.max && c.cur > c.max) advice.push({ level: "info", text: `${c.label} ${c.cur}로 권장 상한 ${c.max}을 넘었습니다. 시트 메모를 확인하세요.` });
+    }
+
+    const order = { high: 0, mid: 1, low: 2, info: 3 };
+    advice.sort((a, b) => order[a.level] - order[b.level]);
+    return { name: avatar.name_mi18n, id: avatar.id, matched: !!ref, ref, selected: sel,
+      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, discs, stats, setInfo, tiers, advice, weights };
+  }
+
+  const api = { evaluate, statKey, setMatches, label };
+  root.ZZZEval = api;
+  if (typeof module !== "undefined") module.exports = api;
+})(typeof window !== "undefined" ? window : globalThis);
