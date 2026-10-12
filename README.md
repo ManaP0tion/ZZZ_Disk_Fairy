@@ -22,7 +22,7 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
 ## 사용 방법
 
 1. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. (이미 열려 있었다면 새로고침합니다.)
-2. 에이전트 목록에서 평가하고 싶은 에이전트를 클릭합니다.
+2. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
 3. 오른쪽에 나타난 패널에서 결과를 확인합니다.
 
 패널 상단에서 기준 등급을 바꿀 수 있습니다.
@@ -71,9 +71,3 @@ python3 tools/convert.py data/sheet.xlsx extension/benchmark.js
 ```
 
 그다음 `chrome://extensions`에서 확장 프로그램을 새로고침합니다.
-
-### 테스트
-
-```
-node test/run.js
-```
