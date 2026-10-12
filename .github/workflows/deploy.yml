@@ -21,6 +21,8 @@ jobs:
         run: cd extension && zip -r ../extension.zip . -x "*.DS_Store"
 
       - name: Upload to Chrome Web Store
+        id: upload_chrome
+        continue-on-error: true
         uses: mnao305/chrome-extension-upload@v7.0.0
         with:
           file-path: extension.zip
@@ -30,3 +32,8 @@ jobs:
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
           publish: true
+
+      - name: Warn when upload is blocked by store review
+        if: steps.upload_chrome.outcome == 'failure'
+        run: |
+          echo "::warning::Chrome Web Store upload failed. This can happen when the extension is already in review."
