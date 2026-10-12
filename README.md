@@ -24,7 +24,7 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
 평가 기준은 [ZZZ 세팅 시트](https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856)를 따르며, 시트 제작자에게 허락을 받아 사용하고 있습니다.
 
 <p align="center">
-  <img src="images/panel-screenshot.jpg" width="800" alt="HoYoLAB 전적 페이지 오른쪽에 디스크 평가 패널이 열린 화면">
+  <img src="images/panel-screenshot.png" width="800" alt="HoYoLAB 전적 페이지 오른쪽에 디스크 평가 패널이 열린 화면">
 </p>
 
 ## 사용 방법
@@ -72,7 +72,8 @@ extension/                 크롬 확장 (이 폴더를 그대로 zip해서 배�
     ├── suit-icons.js      디스크 세트 이름 → 이미지 URL (HoYoWiki)
     └── engine-icons.js    W-엔진 이름 → 이미지 URL (HoYoWiki)
 images/                    README용 이미지
-├── panel-screenshot.jpg   전적 페이지에 패널이 열린 화면
+├── fairy-128.png          페어리 아이콘 (128px)
+├── panel-screenshot.png   전적 페이지에 패널이 열린 화면
 └── store-promo-440x280.png  웹 스토어 홍보 이미지
 tools/convert.py           시트(xlsx) → extension/data/benchmark.js 변환
 test/
