@@ -48,6 +48,11 @@
 
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856";
   const ISSUE_URL = "https://github.com/ManaP0tion/ZZZ_Disk_Fairy/issues/new";
+  const MANIFEST_URL = "https://raw.githubusercontent.com/ManaP0tion/ZZZ_Disk_Fairy/main/extension/manifest.json";
+  const ZIP_URL = "https://github.com/ManaP0tion/ZZZ_Disk_Fairy/archive/refs/heads/main.zip";
+  const newer = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number);
+    for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+    return false; };
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   const CSS = `
@@ -189,6 +194,7 @@
   .foot a:hover { text-decoration: underline; }
   .foot .btn { flex: none; padding: 6px 12px; border-radius: 9999px; background: var(--chip); color: var(--ink); font: 600 12px/1.2 var(--text); }
   .foot .btn:hover { text-decoration: none; }
+  .foot .btns { flex: none; display: flex; gap: 6px; }
   .foot a:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
   /* 목표 스탯 박스: 달성 하늘색, 부족 빨간색 */
   .goals { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
@@ -348,7 +354,7 @@
             <p class="fine" style="margin-top:8px">오른쪽 숫자는 유효한 부옵이 강화된 횟수이며, 가중치를 반영해서 계산합니다. 배경색이 있는 부옵이 유효 옵션이고, +n은 그 부옵이 강화된 횟수입니다.</p>${borrowed}</section>
           ${notes ? `<details open><summary>시트 원문 메모</summary><pre>${esc(notes)}</pre></details>` : ""}
           <div class="foot"><p class="fine">기준 시트 · <a href="${SHEET_URL}" target="_blank" rel="noopener">${esc(window.ZZZ_BENCHMARK.version || "")}</a></p>
-            <a class="btn" href="${ISSUE_URL}" target="_blank" rel="noopener">개선사항 건의</a></div>
+            <div class="btns"><a class="btn" id="upd" href="#">업데이트 확인</a><a class="btn" href="${ISSUE_URL}" target="_blank" rel="noopener">개선사항 건의</a></div></div>
         </div>
         </div>
       </div>`;
@@ -375,6 +381,20 @@
       };
     };
     grip.ondblclick = () => { width = 400; shadow.querySelector(".panel").style.setProperty("--w", "400px"); try { localStorage.removeItem(WIDTH_KEY); } catch (err) {} };
+    shadow.getElementById("upd").onclick = async (e) => {
+      const a = e.currentTarget;
+      if (a.target) return; // 새 버전 링크로 바뀐 뒤에는 그대로 연다
+      e.preventDefault();
+      a.textContent = "확인 중…";
+      try {
+        const cur = chrome.runtime.getManifest().version;
+        const latest = (await (await fetch(MANIFEST_URL, { cache: "no-store" })).json()).version;
+        if (newer(latest, cur)) {
+          a.textContent = `v${latest} 받기`;
+          a.href = ZIP_URL; a.target = "_blank"; a.rel = "noopener";
+        } else a.textContent = `최신 버전 (v${cur})`;
+      } catch (err) { a.textContent = "확인 실패"; }
+    };
     shadow.getElementById("close").onclick = () => host.remove();
     shadow.getElementById("min").onclick = (e) => {
       const p = shadow.querySelector(".panel");
@@ -396,15 +416,44 @@
     );
   }
 
+  function show(avatar) {
+    lastAvatar = avatar;
+    pick = null;
+    rememberIcons(avatar);
+    const draw = () => render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
+    if (document.body) draw();
+    else document.addEventListener("DOMContentLoaded", draw, { once: true });
+  }
+
+  // 페이지는 한 번 불러온 에이전트를 다시 요청하지 않는다 (A → B → A를 누르면 응답이 안 옴).
+  // 그래서 받은 응답을 id별로 모아 두고, 클릭한 카드가 어느 에이전트인지 찾아서 다시 그린다.
+  const seen = new Map();
+  // 클릭 지점에서 카드 크기(이미지 3장 이하)까지만 올라가며, 이미지 URL(1순위)이나 이름(2순위)이 딱 한 명에게만 맞는 요소를 찾는다.
+  // ponytail: 카드 HTML에 에이전트 이미지 URL이나 이름이 있어야 동작함, 안 되면 페이지 DOM을 보고 선택자로 바꿀 것
+  function whoIs(target) {
+    const urls = (a) => Object.values(a).filter((v) => typeof v === "string" && v.startsWith("http"));
+    for (let el = target, i = 0; el && el !== document.body && i < 8; el = el.parentElement, i++) {
+      if (el.querySelectorAll("img").length > 3) return null; // 카드를 벗어나 목록까지 올라옴
+      const html = el.outerHTML, text = el.textContent || "";
+      let hit = [...seen.values()].filter((a) => urls(a).some((u) => html.includes(u)));
+      if (!hit.length) hit = [...seen.values()].filter((a) => [a.full_name_mi18n, a.name_mi18n].some((n) => n && text.includes(n)));
+      if (hit.length === 1) return hit[0];
+      if (hit.length > 1) return null;
+    }
+    return null;
+  }
+  document.addEventListener("click", (ev) => {
+    if (host && ev.composedPath().includes(host)) return; // 패널 안 클릭은 무시
+    const a = seen.size && whoIs(ev.target);
+    // 처음 보는 에이전트면 페이지가 요청하므로 message에서 그린다
+    if (a && (a !== lastAvatar || !document.contains(host))) show(a);
+  }, true);
+
   window.addEventListener("message", (ev) => {
     if (ev.source !== window || !ev.data || !ev.data.__zzzDiscAdvisor) return;
     const list = ev.data.payload && ev.data.payload.data && ev.data.payload.data.avatar_list;
     if (!list || !list.length) return;
-    lastAvatar = list[0];
-    pick = null;
-    rememberIcons(lastAvatar);
-    const draw = () => render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
-    if (document.body) draw();
-    else document.addEventListener("DOMContentLoaded", draw, { once: true });
+    for (const a of list) seen.set(a.id, a);
+    show(list[0]);
   });
 })();
