@@ -1,7 +1,7 @@
 // 시트의 모든 에이전트 × 3개 기준을 가상 응답으로 평가해서 "기준 없음"이 나오는 경우와 이유를 출력
 const fs = require("fs"), vm = require("vm");
 const ctx = { window: {} }; vm.createContext(ctx);
-for (const f of ["benchmark.js", "suit-icons.js", "evaluator.js"]) vm.runInContext(fs.readFileSync(__dirname + "/../extension/" + f, "utf8"), ctx);
+for (const f of ["data/benchmark.js", "data/suit-icons.js", "evaluator.js"]) vm.runInContext(fs.readFileSync(__dirname + "/../extension/" + f, "utf8"), ctx);
 const E = ctx.window.ZZZEval, B = ctx.window.ZZZ_BENCHMARK;
 // 실제 API 이름(내 계정 35명) — 그 외는 시트 이름 그대로 온다고 가정
 const API = { "0호 엔비": "0호·엔비", "시드": "「시드」", "11호": "「11호」", "S. 빌리": "스타라이트 빌리" };

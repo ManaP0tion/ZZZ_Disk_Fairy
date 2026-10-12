@@ -268,15 +268,32 @@
       }
     }
 
-    // 3) 낮은 점수 디스크
+    // 3) W-엔진 판정: 시트 W-엔진 칸(악귀 탭엔 없음)과 장착 엔진을 이름으로 비교
+    const engRef = [entries[sel], entries.good, entries.basic].find((e) => e && e.wengine && e.wengine.length) || null;
+    const w = avatar.weapon;
+    const weaponName = w && (w.name || w.name_mi18n);
+    let engine = null;
+    if (engRef) {
+      const recs = engRef.wengine.map((x) => {
+        const tag = (x.match(/\[(.+?)\]/) || [])[1] || null;
+        const name = stripTag(x);
+        // 부분 일치는 쓰지 않는다 ("별빛 엔진"과 "별빛 엔진 레플리카"는 다른 엔진)
+        return { name, tag, on: !!weaponName && squash(name) === squash(weaponName) };
+      });
+      const idx = recs.findIndex((r) => r.on);
+      engine = { name: weaponName || null, icon: (w && w.icon) || null, star: (w && w.star) || null, recs, rank: idx, note: engRef.wengineNote || null, from: tierLabelOf(engRef) };
+      if (!weaponName) advice.unshift({ level: "high", text: `W-엔진이 없습니다. 권장 W-엔진은 ${recs.map((r) => r.name).join(" / ")}입니다.` });
+      else if (idx < 0) advice.push({ level: "mid", text: `W-엔진이 ${weaponName}입니다. 시트 권장 W-엔진은 ${recs.map((r) => r.name).join(" / ")}입니다.` });
+    }
+
+    // 4) 낮은 점수 디스크
     const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).sort((a, b) => a.eff - b.eff);
     weak.forEach((d, i) =>
       advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크는 교체를 고려해 보세요. 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
     );
 
-    // 4) 등급별 목표 스탯
+    // 5) 등급별 목표 스탯
     const tiers = {};
-    const weaponName = avatar.weapon && (avatar.weapon.name || avatar.weapon.name_mi18n);
     const ctxBase = { discs, rank: avatar.rank ?? null, setCounts: counts, weapon: weaponName || null };
     for (const k of ["basic", "good", "max"])
       tiers[k] = { label: T[k].label, entry: entries[k], result: checkTier(entries[k], stats, ctxBase, T[k].label, avatar.name_mi18n) };
@@ -297,7 +314,7 @@
     const order = { high: 0, mid: 1, low: 2, info: 3 };
     advice.sort((a, b) => order[a.level] - order[b.level]);
     return { name: avatar.name_mi18n, id: avatar.id, matched: !!ref, ref, selected: sel,
-      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, discs, stats, setInfo, tiers, advice, weights };
+      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, discs, stats, setInfo, tiers, advice, weights };
   }
 
   const api = { evaluate, statKey, setMatches, label };

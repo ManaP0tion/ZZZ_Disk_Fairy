@@ -1,6 +1,6 @@
 const fs = require("fs"), vm = require("vm"), assert = require("assert");
 const ctx = { window: {} }; vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(__dirname + "/../extension/benchmark.js", "utf8"), ctx);
+vm.runInContext(fs.readFileSync(__dirname + "/../extension/data/benchmark.js", "utf8"), ctx);
 const E = require("../extension/evaluator.js"); const B = ctx.window.ZZZ_BENCHMARK;
 const pick = (name, full) => { const r = E.evaluate({ name_mi18n: name, full_name_mi18n: full, equip: [], properties: [] }, B, "good"); return r.ref && r.ref.set4.join("/"); };
 const good = (n) => B.tiers.good.agents.find((a) => a.name === n).set4.join("/");

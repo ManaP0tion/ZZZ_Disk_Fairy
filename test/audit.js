@@ -1,7 +1,7 @@
 // 시트 전체 감사: 파싱 누락/알 수 없는 표기/목표 없음 등을 찾는다.
 const fs = require("fs"), vm = require("vm");
 const ctx = { window: {} }; vm.createContext(ctx);
-for (const f of ["benchmark.js", "suit-icons.js", "evaluator.js"]) vm.runInContext(fs.readFileSync(__dirname + "/../extension/" + f, "utf8"), ctx);
+for (const f of ["data/benchmark.js", "data/suit-icons.js", "evaluator.js"]) vm.runInContext(fs.readFileSync(__dirname + "/../extension/" + f, "utf8"), ctx);
 const E = ctx.window.ZZZEval, B = ctx.window.ZZZ_BENCHMARK, ICONS = Object.keys(ctx.window.ZZZ_SUIT_ICONS);
 const KNOWN = /^(ATK%?|HP%?|DEF%?|CR|CD|AP|AM|PENR|PEN|ER|IMP|SHEER|DMG_.+)$/;
 const issues = [];

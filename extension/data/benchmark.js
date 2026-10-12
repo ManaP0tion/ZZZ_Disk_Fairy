@@ -13,6 +13,7 @@ window.ZZZ_BENCHMARK = {
      "wengine": [
       "태양의 유체[전엔]"
      ],
+     "wengineNote": "",
      "set4": [
       "새벽녘 여행기"
      ],
@@ -104,6 +105,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "물빛 노랫소리"
      ],
@@ -193,6 +195,7 @@ window.ZZZ_BENCHMARK = {
       "푸른 물결의 솥",
       "일렉트로 워크"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -270,6 +273,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "내 맘대로 게임 볼"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -319,6 +323,7 @@ window.ZZZ_BENCHMARK = {
       "당도 50% 눈토끼[전엔]",
       "오리지널 변신 아이템"
      ],
+     "wengineNote": "",
      "set4": [
       "이상한 나라의 눈토끼"
      ],
@@ -370,6 +375,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "수줍은 악마[소우카쿠]"
      ],
+     "wengineNote": "",
      "set4": [
       "고요 속의 별",
       "달빛 기사의 칭송"
@@ -423,6 +429,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "송곳니 메탈"
      ],
@@ -493,6 +500,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "그림자처럼 함께"
      ],
@@ -583,6 +591,7 @@ window.ZZZ_BENCHMARK = {
       "쌍둥이의 눈물",
       "감전 립글로스"
      ],
+     "wengineNote": "",
      "set4": [
       "송곳니 메탈"
      ],
@@ -656,6 +665,7 @@ window.ZZZ_BENCHMARK = {
       "뛰뛰빵빵[파이퍼]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "카오스 재즈"
      ],
@@ -715,6 +725,7 @@ window.ZZZ_BENCHMARK = {
       "구속된 자[리카온]",
       "스팀 오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -780,6 +791,7 @@ window.ZZZ_BENCHMARK = {
       "뛰뛰빵빵[파이퍼]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "나뭇가지 검의 노래"
      ],
@@ -873,6 +885,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "그림자처럼 함께"
      ],
@@ -964,6 +977,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "빛의 아리아"
      ],
@@ -1022,6 +1036,7 @@ window.ZZZ_BENCHMARK = {
       "흐느끼는 요람[리나]",
       "호전적인 꽝꽝이[루시]"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -1072,6 +1087,7 @@ window.ZZZ_BENCHMARK = {
       "어스름한 밤의 화염[마나토]",
       "일렉트로 워크"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -1153,6 +1169,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "캐논 로터"
      ],
+     "wengineNote": "",
      "set4": [
       "여명의 꽃"
      ],
@@ -1241,6 +1258,7 @@ window.ZZZ_BENCHMARK = {
       "들끓는 가마솥",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "파에톤의 노래",
       "자유의 블루스"
@@ -1300,6 +1318,7 @@ window.ZZZ_BENCHMARK = {
       "굴착기-붉은 축[앤톤]",
       "캐논 로터"
      ],
+     "wengineNote": "",
      "set4": [
       "여명의 꽃"
      ],
@@ -1381,6 +1400,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "감전 립글로스"
      ],
+     "wengineNote": "",
      "set4": [
       "수감자 수기"
      ],
@@ -1438,6 +1458,7 @@ window.ZZZ_BENCHMARK = {
       "흐느끼는 요람[리나]",
       "호전적인 꽝꽝이[루시]"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -1489,6 +1510,7 @@ window.ZZZ_BENCHMARK = {
       "푸른 물결의 솥",
       "기변의 큐브"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -1570,6 +1592,7 @@ window.ZZZ_BENCHMARK = {
       "쌍둥이의 눈물",
       "둥둥 메아리"
      ],
+     "wengineNote": "",
      "set4": [
       "울부짖는 살롱"
      ],
@@ -1628,6 +1651,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[콜레다]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -1694,6 +1718,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "카오스 재즈",
       "썬더 메탈"
@@ -1753,6 +1778,7 @@ window.ZZZ_BENCHMARK = {
       "돌아온 날개의 시[전엔]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "깃털에 얽힌 맹세"
      ],
@@ -1812,6 +1838,7 @@ window.ZZZ_BENCHMARK = {
       "구속된 자[전엔]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -1886,6 +1913,7 @@ window.ZZZ_BENCHMARK = {
       "캐논 로터",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "여명의 꽃"
      ],
@@ -1961,6 +1989,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[전엔]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -2026,6 +2055,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "내 맘대로 게임 볼"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -2078,6 +2108,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[전엔]",
       "내 맘대로 게임 볼"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송",
       "고요 속의 별"
@@ -2127,9 +2158,10 @@ window.ZZZ_BENCHMARK = {
      "spec": "격파",
      "wengine": [
       "헬파이어 기어[콜레다]",
-      "데마라 배터리 II형[전엔]",
+      "데마라 배터리 Ⅱ형[전엔]",
       "귀중한 화석 코어"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -2189,10 +2221,9 @@ window.ZZZ_BENCHMARK = {
      "name": "반인호",
      "spec": "방어",
      "wengine": [
-      "진괘를 담은 함[전엔]",
-      "그 외에 공격력 or 에너지",
-      "회복 주옵 엔진 사용 가능"
+      "진괘를 담은 함[전엔]"
      ],
+     "wengineNote": "그 외에 공격력 or 에너지 회복 주옵 엔진 사용 가능",
      "set4": [
       "이상한 나라의 눈토끼"
      ],
@@ -2242,6 +2273,7 @@ window.ZZZ_BENCHMARK = {
       "뛰뛰빵빵[전엔]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "송곳니 메탈",
       "자유의 블루스"
@@ -2309,6 +2341,7 @@ window.ZZZ_BENCHMARK = {
       "돌아온 날개의 시[전엔]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "깃털에 얽힌 맹세"
      ],
@@ -2373,6 +2406,7 @@ window.ZZZ_BENCHMARK = {
       "스팀 오븐",
       "헬파이어 기어"
      ],
+     "wengineNote": "",
      "set4": [
       "고요 속의 별",
       "산림의 왕",
@@ -2432,6 +2466,7 @@ window.ZZZ_BENCHMARK = {
       "쌍둥이의 눈물",
       "둥둥 메아리"
      ],
+     "wengineNote": "",
      "set4": [
       "울부짖는 살롱",
       "고요 속의 별"
@@ -2505,6 +2540,7 @@ window.ZZZ_BENCHMARK = {
       "푸른 물결의 솥",
       "기변의 큐브"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -2575,6 +2611,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "내 맘대로 게임 볼"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -2627,6 +2664,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "물빛 노랫소리"
      ],
@@ -2712,6 +2750,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[콜레다]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -2772,6 +2811,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "송곳니 메탈"
      ],
@@ -2847,6 +2887,7 @@ window.ZZZ_BENCHMARK = {
       "흐느끼는 요람[리나]",
       "호전적인 꽝꽝이[루시]"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송",
       "고요 속의 별",
@@ -2905,6 +2946,7 @@ window.ZZZ_BENCHMARK = {
       "저돌적인 송곳니[전엔]",
       "조명을 새기는 칼"
      ],
+     "wengineNote": "",
      "set4": [
       "이상한 나라의 눈토끼",
       "원시 펑크"
@@ -2962,6 +3004,7 @@ window.ZZZ_BENCHMARK = {
       "쌍둥이의 눈물",
       "감전 립글로스"
      ],
+     "wengineNote": "",
      "set4": [
       "송곳니 메탈"
      ],
@@ -3037,6 +3080,7 @@ window.ZZZ_BENCHMARK = {
       "열망의 악센트",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "딱따구리 일렉트로"
      ],
@@ -3129,6 +3173,7 @@ window.ZZZ_BENCHMARK = {
       "진괘를 담은 함[전엔]",
       "저돌적인 송곳니[카이사르]"
      ],
+     "wengineNote": "",
      "set4": [
       "이상한 나라의 눈토끼",
       "고요 속의 별"
@@ -3183,6 +3228,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[콜레다]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -3242,6 +3288,7 @@ window.ZZZ_BENCHMARK = {
       "하우스키퍼[전엔]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "호르몬 펑크",
       "복어 일렉트로"
@@ -3331,6 +3378,7 @@ window.ZZZ_BENCHMARK = {
       "별빛 엔진 레플리카[전엔]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "딱따구리 일렉트로",
       "복어 일렉트로"
@@ -3418,6 +3466,7 @@ window.ZZZ_BENCHMARK = {
       "뛰뛰빵빵[전엔]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "송곳니 메탈",
       "자유의 블루스"
@@ -3493,6 +3542,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[콜레다]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕",
       "고요 속의 별"
@@ -3550,11 +3600,12 @@ window.ZZZ_BENCHMARK = {
      "name": "귤복복",
      "spec": "격파",
      "wengine": [
-      "복을 뽐는 맹호[전엔]",
+      "복을 뿜는 맹호[전엔]",
       "화염의 월계관[라이터]",
       "헬파이어 기어[콜레다]",
       "귀중한 화석 코어"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -3625,6 +3676,7 @@ window.ZZZ_BENCHMARK = {
       "어스름한 밤의 화염[마나토]",
       "푸른 물결의 솥"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -3695,6 +3747,7 @@ window.ZZZ_BENCHMARK = {
       "도금된 화신풍",
       "열망의 악센트"
      ],
+     "wengineNote": "",
      "set4": [
       "그림자처럼 함께"
      ],
@@ -3769,6 +3822,7 @@ window.ZZZ_BENCHMARK = {
       "열망의 악센트",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "호르몬 펑크",
       "고요 속의 별",
@@ -3850,6 +3904,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[콜레다]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕",
       "원시 펑크"
@@ -3906,6 +3961,7 @@ window.ZZZ_BENCHMARK = {
       "뛰뛰빵빵[파이퍼]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "카오스 재즈",
       "자유의 블루스"
@@ -3979,6 +4035,7 @@ window.ZZZ_BENCHMARK = {
       "기계 심장에 내린 씨앗[시드]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "딱따구리 일렉트로",
       "여명의 꽃",
@@ -4073,6 +4130,7 @@ window.ZZZ_BENCHMARK = {
       "헬파이어 기어[전엔]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕",
       "고요 속의 별"
@@ -4132,6 +4190,7 @@ window.ZZZ_BENCHMARK = {
       "청명의 보금자리[의현]",
       "일렉트로 워크"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -4200,6 +4259,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[전엔]",
       "내 맘대로 게임 볼"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송",
       "고요 속의 별"
@@ -4251,9 +4311,9 @@ window.ZZZ_BENCHMARK = {
      "spec": "방어",
      "wengine": [
       "진괘를 담은 함[반인호]",
-      "(딜세팅 용)",
       "저돌적인 송곳니[카이사르]"
      ],
+     "wengineNote": "(딜세팅 용)",
      "set4": [
       "이상한 나라의 눈토끼",
       "불지옥 메탈",
@@ -4329,6 +4389,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "여명의 꽃",
       "호르몬 펑크"
@@ -4432,6 +4493,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "감전 립글로스"
      ],
+     "wengineNote": "",
      "set4": [
       "수감자 수기"
      ],
@@ -4506,6 +4568,7 @@ window.ZZZ_BENCHMARK = {
       "당도 50% 눈토끼[전엔]",
       "오리지널 변신 아이템"
      ],
+     "wengineNote": "",
      "set4": [
       "이상한 나라의 눈토끼",
       "고요 속의 별"
@@ -4560,6 +4623,7 @@ window.ZZZ_BENCHMARK = {
       "청명의 보금자리[의현]",
       "어스름한 밤의 화염[마나토]"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -4630,6 +4694,7 @@ window.ZZZ_BENCHMARK = {
       "스틸 쿠션[네코마타]",
       "캐논 로터"
      ],
+     "wengineNote": "",
      "set4": [
       "호르몬 펑크",
       "복어 일렉트로"
@@ -4719,6 +4784,7 @@ window.ZZZ_BENCHMARK = {
       "감입 컴파일러[그레이스]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "나뭇가지 검의 노래"
      ],
@@ -4828,6 +4894,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "딱따구리 일렉트로",
       "여명의 꽃",
@@ -4924,6 +4991,7 @@ window.ZZZ_BENCHMARK = {
       "화염의 월계관[라이터]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕",
       "고요 속의 별"
@@ -4991,9 +5059,9 @@ window.ZZZ_BENCHMARK = {
      "wengine": [
       "호전적인 꽝꽝이[루시]",
       "내 맘대로 게임 볼",
-      "흐느끼는 요람[리나]",
-      "(딜세팅 용)"
+      "흐느끼는 요람[리나]"
      ],
+     "wengineNote": "(딜세팅 용)",
      "set4": [
       "자유의 블루스",
       "달빛 기사의 칭송"
@@ -5048,6 +5116,7 @@ window.ZZZ_BENCHMARK = {
       "태양의 유체[전엔]",
       "열망의 악센트"
      ],
+     "wengineNote": "",
      "set4": [
       "새벽녘 여행기",
       "복어 일렉트로"
@@ -5145,6 +5214,7 @@ window.ZZZ_BENCHMARK = {
       "들끓는 가마솥",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "파에톤의 노래",
       "자유의 블루스",
@@ -5221,6 +5291,7 @@ window.ZZZ_BENCHMARK = {
       "감전 립글로스",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "파에톤의 노래",
       "빛의 아리아"
@@ -5296,6 +5367,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "내 맘대로 게임볼"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -5350,6 +5422,7 @@ window.ZZZ_BENCHMARK = {
       "푸른 물결의 솥",
       "일렉트로 워크"
      ],
+     "wengineNote": "",
      "set4": [
       "운규 이야기"
      ],
@@ -5431,6 +5504,7 @@ window.ZZZ_BENCHMARK = {
       "별빛 꿈을 누비는 새[전엔]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "파에톤의 노래"
      ],
@@ -5502,6 +5576,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "수줍은 악마[소우카쿠]"
      ],
+     "wengineNote": "",
      "set4": [
       "고요 속의 별",
       "달빛 기사의 칭송"
@@ -5565,11 +5640,12 @@ window.ZZZ_BENCHMARK = {
      "name": "주연",
      "spec": "강공",
      "wengine": [
-      "서프레서 VI형[전엔]",
+      "서프레서 Ⅵ형[전엔]",
       "유황석[11호]",
       "기계 심장에 내린 씨앗[시드]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "새벽녘 여행기",
       "카오스 메탈",
@@ -5661,6 +5737,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "흐느끼는 요람[리나]"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송",
       "자유의 블루스"
@@ -5710,6 +5787,7 @@ window.ZZZ_BENCHMARK = {
       "진혈의 비갑",
       "묘운이 눈앞에"
      ],
+     "wengineNote": "",
      "set4": [
       "가시 돋친 장미"
      ],
@@ -5773,6 +5851,7 @@ window.ZZZ_BENCHMARK = {
       "굴착기-붉은 축[앤톤]",
       "열망의 악센트"
      ],
+     "wengineNote": "",
      "set4": [
       "여명의 꽃",
       "고요 속의 별"
@@ -5857,6 +5936,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "열망의 악센트"
      ],
+     "wengineNote": "",
      "set4": [
       "여명의 꽃",
       "고요 속의 별"
@@ -5937,6 +6017,7 @@ window.ZZZ_BENCHMARK = {
       "구속된 자[리카온]",
       "스팀오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕",
       "고요 속의 별"
@@ -5998,6 +6079,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "열망의 악센트"
      ],
+     "wengineNote": "",
      "set4": [
       "그림자처럼 함께"
      ],
@@ -6089,6 +6171,7 @@ window.ZZZ_BENCHMARK = {
       "열망의 악센트",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "그림자처럼 함께",
       "썬더 메탈",
@@ -6186,6 +6269,7 @@ window.ZZZ_BENCHMARK = {
       "쌍둥이의 눈물",
       "감전 립글로스"
      ],
+     "wengineNote": "",
      "set4": [
       "카오스 재즈",
       "썬더 메탈",
@@ -6261,6 +6345,7 @@ window.ZZZ_BENCHMARK = {
       "구속된 자[리카온]",
       "스팀 오븐"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -6319,6 +6404,7 @@ window.ZZZ_BENCHMARK = {
       "시류의 현자[야나기]",
       "쌍둥이의 눈물"
      ],
+     "wengineNote": "",
      "set4": [
       "썬더 메탈",
       "자유의 블루스",
@@ -6396,6 +6482,7 @@ window.ZZZ_BENCHMARK = {
       "호전적인 꽝꽝이[루시]",
       "시간의 파편"
      ],
+     "wengineNote": "",
      "set4": [
       "달빛 기사의 칭송"
      ],
@@ -6440,6 +6527,7 @@ window.ZZZ_BENCHMARK = {
       "진괘를 담은 함[반인호]",
       "봄날의 포옹"
      ],
+     "wengineNote": "",
      "set4": [
       "이상한 나라의 눈토끼",
       "고요 속의 별"
@@ -6488,9 +6576,10 @@ window.ZZZ_BENCHMARK = {
      "spec": "격파",
      "wengine": [
       "헬파이어 기어[콜레다]",
-      "데마라 배터리 II형[전엔]",
+      "데마라 배터리 Ⅱ형[전엔]",
       "귀중한 화석 코어"
      ],
+     "wengineNote": "",
      "set4": [
       "산림의 왕"
      ],
@@ -6548,6 +6637,7 @@ window.ZZZ_BENCHMARK = {
       "유황석[11호]",
       "별빛 엔진"
      ],
+     "wengineNote": "",
      "set4": [
       "고요 속의 별",
       "복어 일렉트로"

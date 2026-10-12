@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<style>
+  :root { --primary: #0066cc; --ink: #1d1d1f; --ink-60: #6e6e73; --surface: #f5f5f7; color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) { :root { --primary: #2997ff; --ink: #f5f5f7; --ink-60: #a1a1a6; --surface: #1d1d1f; } }
+  body { margin: 0; width: 260px; padding: 20px; background: var(--surface); color: var(--ink);
+    font: 400 13px/1.45 "Pretendard Variable", Pretendard, system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif; word-break: keep-all; }
+  .top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .top img { width: 32px; height: 32px; }
+  h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  p { margin: 0 0 16px; color: var(--ink-60); }
+  button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 10px; border-radius: 9999px; cursor: pointer;
+    background: var(--primary); color: #fff; text-align: center; font-weight: 600; font-size: 14px; }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  button:active { transform: scale(0.97); }
+</style>
+<div class="top"><img src="icons/icon48.png" alt=""><h1>ZZZ 디스크 어드바이저</h1></div>
+<p>HoYoLAB 전적 페이지에서 에이전트를 누르면 오른쪽에 디스크 평가 패널이 나타납니다.</p>
+<button id="go">전적 보러 가기</button>
+<script src="popup.js"></script>
+</html>

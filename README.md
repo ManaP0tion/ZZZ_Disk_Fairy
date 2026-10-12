@@ -3,7 +3,7 @@
   <h1>ZZZ 디스크 어드바이저</h1>
   <p align="center">
   <a href="https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi">
-    <img src="images/promo-440x280.png" width="440" alt="ZZZ 디스크 어드바이저 홍보 이미지">
+    <img src="images/store-promo-440x280.png" width="440" alt="ZZZ 디스크 어드바이저 홍보 이미지">
   </a>
 </p>
   <p>젠레스 존 제로(ZZZ) 에이전트가 장착한 디스크를 평가해 주는 크롬 확장 프로그램입니다.</p>
@@ -18,22 +18,23 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
 - 디스크 6개에 각각 매긴 점수 (우수 / 양호 / 보통 / 교체 후보)
 - 주옵션이 권장 옵션과 일치하는지 여부
 - 권장하는 2세트·4세트와 현재 장착한 세트의 비교
+- 장착한 W-엔진이 시트 권장 엔진인지, 몇 순위인지, 교체를 고려해야 하는지
 - 목표 스탯(치명타, 관통 등)에 도달하려면 얼마나 더 필요한지
 
 평가 기준은 [ZZZ 세팅 시트](https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856)를 따르며, 시트 제작자에게 허락을 받아 사용하고 있습니다.
 
 <p align="center">
-  <img src="images/capture.jpg" width="800" alt="HoYoLAB 전적 페이지 오른쪽에 디스크 평가 패널이 열린 화면">
+  <img src="images/panel-screenshot.jpg" width="800" alt="HoYoLAB 전적 페이지 오른쪽에 디스크 평가 패널이 열린 화면">
 </p>
 
 ## 사용 방법
 
 1. [크롬 웹 스토어](https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi)에서 확장 프로그램을 설치합니다.
-2. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. 페이지가 이미 열려 있었다면 새로고침합니다.
+2. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. 확장 프로그램 아이콘을 누르고 **전적 보러 가기**를 눌러도 됩니다. 페이지가 이미 열려 있었다면 새로고침합니다.
 3. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
 4. 오른쪽에 나타난 패널에서 평가 결과를 확인합니다.
 
-패널 상단에서는 평가 기준이 되는 등급을 바꿀 수 있습니다.
+패널 상단에서는 평가 기준이 되는 등급을 바꿀 수 있습니다. 패널 왼쪽 가장자리를 드래그하면 폭을 넓힐 수 있고, 두 번 클릭하면 원래 폭으로 돌아갑니다.
 
 | 등급 | 의미 |
 |---|---|
@@ -58,12 +59,25 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
 
 ### 파일 구성
 
-| 파일 | 역할 |
-|---|---|
-| `extension/inject.js` | 페이지가 받아오는 `avatar/info` 응답을 복사해서 content.js에 전달 |
-| `extension/content.js` | 평가를 실행하고 오른쪽 패널을 그림 (Shadow DOM) |
-| `extension/evaluator.js` | 평가 엔진 (주옵·세트 판정, 유효 강화 횟수, 목표 스탯) |
-| `extension/benchmark.js` | 시트에서 자동 생성한 기준 데이터 |
-| `extension/suit-icons.js` | 세트 이름 → 디스크 이미지 URL |
-| `tools/convert.py` | 시트(xlsx) → benchmark.js 변환 |
-| `test/run.js` | 테스트 |
+```
+extension/                 크롬 확장 (이 폴더를 그대로 zip해서 배포)
+├── manifest.json
+├── inject.js              페이지가 받아오는 avatar/info 응답을 복사해서 content.js에 전달
+├── content.js             평가를 실행하고 오른쪽 패널을 그림 (Shadow DOM)
+├── evaluator.js           평가 엔진 (주옵·세트·W-엔진 판정, 유효 강화 횟수, 목표 스탯)
+├── popup.html, popup.js   툴바 아이콘 팝업 (전적 페이지 열기)
+├── icons/                 확장 아이콘 (16/32/48/128px)
+└── data/                  자동 생성 데이터 (직접 수정하지 않음)
+    ├── benchmark.js       시트 기준 데이터 (tools/convert.py로 생성)
+    ├── suit-icons.js      디스크 세트 이름 → 이미지 URL (HoYoWiki)
+    └── engine-icons.js    W-엔진 이름 → 이미지 URL (HoYoWiki)
+images/                    README용 이미지
+├── panel-screenshot.jpg   전적 페이지에 패널이 열린 화면
+└── store-promo-440x280.png  웹 스토어 홍보 이미지
+tools/convert.py           시트(xlsx) → extension/data/benchmark.js 변환
+test/
+├── run.js                 테스트 (배포 전에 CI에서 실행)
+├── names.js               API 이름 ↔ 시트 이름 매칭 확인
+├── audit.js, sweep.js     시트 전체 파싱·평가 점검 (결과 출력용)
+└── fixture-avatar-vellina.json  테스트용 avatar/info 응답
+```

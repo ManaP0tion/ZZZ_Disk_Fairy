@@ -1,6 +1,6 @@
-"""ZZZ 세팅 시트(xlsx) -> extension/benchmark.js 변환기.
+"""ZZZ 세팅 시트(xlsx) -> extension/data/benchmark.js 변환기.
 
-사용: python3 tools/convert.py data/sheet.xlsx extension/benchmark.js
+사용: python3 tools/convert.py data/sheet.xlsx extension/data/benchmark.js
 """
 import json, re, sys
 import openpyxl
@@ -15,6 +15,21 @@ TIERS = {
 }
 
 SET_FIX = {"쇼크스타 디스크": "쇼크스타 디스코"}
+# W-엔진 표기를 위키/게임 이름에 맞춘다 (시트 오타, 로마 숫자)
+ENGINE_FIX = {"복을 뽐는 맹호": "복을 뿜는 맹호", "II형": "Ⅱ형", "VI형": "Ⅵ형"}
+
+
+def parse_engines(s):
+    """엔진 목록과 메모 문장("그 외에 ... 사용 가능", "(딜세팅 용)")을 나눈다."""
+    engines, notes = [], []
+    for t in split_list(s):
+        if t.startswith("(") or re.search(r"가능|그 외| or ", t):
+            notes.append(t)
+            continue
+        for a, b in ENGINE_FIX.items():
+            t = t.replace(a, b)
+        engines.append(t)
+    return engines, " ".join(notes)
 
 TARGET_KEYS = [  # (시트 표기 정규식, 키)
     (r"공(?:격력)?", "ATK"), (r"체력|HP", "HP"), (r"이상마(?:스터리)?", "AP"),
@@ -132,7 +147,7 @@ def parse_tab(ws, cols):
         if "spec" in cols:
             e["spec"] = cell(ws, r, cols["spec"])
         if "wengine" in cols:
-            e["wengine"] = split_list(cell(ws, r, cols["wengine"]))
+            e["wengine"], e["wengineNote"] = parse_engines(cell(ws, r, cols["wengine"]))
         # 괄호 메모("(w/ 다이아린)")를 먼저 지운 뒤 나눈다. 시트 오타는 SET_FIX로 교정.
         strip = lambda v: re.sub(r"\([^)]*\)", "", v, flags=re.S)
         e["set4"] = [SET_FIX.get(t.strip(), t.strip()) for t in split_list(strip(cell(ws, r, cols["set4"])))]
