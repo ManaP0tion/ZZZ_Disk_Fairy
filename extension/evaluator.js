@@ -61,7 +61,7 @@
       keys.add(k);
       if (NAME_ALIAS[k]) keys.add(NAME_ALIAS[k]);
       if (k.includes("스타라이트") && k.includes("빌리")) keys.add("S빌리");
-      if (k.startsWith("오르피")) keys.add("오피"); // 게임: "오르피 & 마구스", 시트: "오피"
+      if (k.startsWith("오피")) keys.add("오피"); // 게임: "오피 마그누손& 「도깨비불」", 시트: "오피"
     }
     // 부분 일치는 쓰지 않는다 ("0호 엔비"가 "엔비"로, "스타라이트 빌리"가 "빌리"로 잘못 붙는 문제)
     return (tier.agents || []).find((a) => keys.has(normName(a.name))) || null;
