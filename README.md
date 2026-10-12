@@ -1,49 +1,60 @@
-# ZZZ 디스크 어드바이저
+<div align="center">
+  <img src="extension/icons/icon128.png" width="96" alt="ZZZ 디스크 어드바이저 아이콘">
+  <h1>ZZZ 디스크 어드바이저</h1>
+  <p align="center">
+  <a href="https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi">
+    <img src="images/promo-440x280.png" width="440" alt="ZZZ 디스크 어드바이저 홍보 이미지">
+  </a>
+</p>
+  <p>젠레스 존 제로(ZZZ) 에이전트가 장착한 디스크를 평가해 주는 크롬 확장 프로그램입니다.</p>
+  <p><a href="https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi"><b>크롬 웹스토어 링크</b></a></p>
+</div>
 
-젠레스 존 제로(ZZZ) 에이전트가 장착한 디스크가 괜찮은지 알려주는 크롬 확장 프로그램입니다.
+## 무엇을 알려주나요?
 
-HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에 평가 패널이 나타납니다.
-패널에서는 다음 내용을 확인할 수 있습니다.
+HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에 평가 패널이 나타납니다.  
+패널에서는 아래 내용을 확인할 수 있습니다.
 
-- 디스크 6개 각각의 점수 (우수 / 양호 / 보통 / 교체 후보)
-- 주옵션이 권장 옵션과 맞는지 여부
-- 권장 2세트·4세트와 지금 장착한 세트 비교
-- 목표 스탯(치명타, 관통 등)까지 얼마나 부족한지
+- 디스크 6개에 각각 매긴 점수 (우수 / 양호 / 보통 / 교체 후보)
+- 주옵션이 권장 옵션과 일치하는지 여부
+- 권장하는 2세트·4세트와 현재 장착한 세트의 비교
+- 목표 스탯(치명타, 관통 등)에 도달하려면 얼마나 더 필요한지
 
-평가 기준은 [ZZZ 세팅 시트](https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856)를 따릅니다. 시트 제작자에게 허락을 받고 사용하고 있습니다.
+평가 기준은 [ZZZ 세팅 시트](https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856)를 따르며, 시트 제작자에게 허락을 받아 사용하고 있습니다.
 
+<p align="center">
+  <img src="images/capture.jpg" width="800" alt="HoYoLAB 전적 페이지 오른쪽에 디스크 평가 패널이 열린 화면">
+</p>
 
 ## 사용 방법
 
 1. [크롬 웹 스토어](https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi)에서 확장 프로그램을 설치합니다.
-2. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. (이미 열려 있었다면 새로고침합니다.)
+2. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. 페이지가 이미 열려 있었다면 새로고침합니다.
 3. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
-4. 오른쪽에 나타난 패널에서 결과를 확인합니다.
+4. 오른쪽에 나타난 패널에서 평가 결과를 확인합니다.
 
-패널 상단에서 기준 등급을 바꿀 수 있습니다.
+패널 상단에서는 평가 기준이 되는 등급을 바꿀 수 있습니다.
 
 | 등급 | 의미 |
 |---|---|
-| 응애 | 입문자 기준 |
+| 응애 | 입문자에게 맞춘 기준 |
 | 이잘키 | 일반적인 기준선 |
-| 악귀 | 고점 기준 |
+| 악귀 | 고점을 노리는 기준 |
 
 ## 점수는 어떻게 계산하나요?
 
-부옵션이 쓸모 있는 옵션에 몇 번 강화되었는지를 셉니다.
+부옵션이 쓸모 있는 옵션으로 몇 번 강화되었는지를 셉니다.
 
-- 해당 에이전트에게 유효한 부옵션 강화 1회 = 1점
-- 후순위 부옵션이나 깡 공격력/체력/방어력 강화 1회 = 0.5점
-- 합계가 **6점 이상이면 우수**, 4점 이상이면 양호, 2.5점 이상이면 보통, 그 미만이면 교체 후보로 표시합니다.
+- 해당 에이전트에게 유효한 부옵션이 1회 강화되면 1점을 줍니다.
+- 후순위 부옵션이나 깡 공격력/체력/방어력이 1회 강화되면 0.5점을 줍니다.
+- 합계가 **6점 이상이면 우수**, 4점 이상이면 양호, 2.5점 이상이면 보통으로 표시하고, 그보다 낮으면 교체 후보로 표시합니다.
 
 ## 개인정보와 안전성
 
-확장 프로그램은 HoYoLAB 서버에 별도로 요청을 보내지 않습니다.
-전적 페이지가 원래 불러오는 데이터를 그대로 읽어서 평가하며, 어떤 정보도 외부로 전송하지 않습니다.
+이 확장 프로그램은 HoYoLAB 서버에 별도의 요청을 보내지 않습니다. 전적 페이지가 원래 불러오는 데이터를 그대로 읽어서 평가하며, 어떤 정보도 외부로 전송하지 않습니다.
+
 
 ---
-
-## 개발자용
 
 ### 파일 구성
 
@@ -55,14 +66,4 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
 | `extension/benchmark.js` | 시트에서 자동 생성한 기준 데이터 |
 | `extension/suit-icons.js` | 세트 이름 → 디스크 이미지 URL |
 | `tools/convert.py` | 시트(xlsx) → benchmark.js 변환 |
-| `test/run.js` | 엔진 테스트 |
-
-### 시트 갱신
-
-원본 시트를 xlsx로 내려받아 `data/sheet.xlsx`에 둔 뒤 실행합니다. (원본 시트는 저장소에 커밋하지 않습니다.)
-
-```
-python3 tools/convert.py data/sheet.xlsx extension/benchmark.js
-```
-
-그다음 `chrome://extensions`에서 확장 프로그램을 새로고침합니다.
+| `test/run.js` | 테스트 |
