@@ -33,8 +33,21 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   const r2 = E.evaluate({ ...av, weapon: { name: "커터칼" } }, B, "max");
   assert.equal(r2.engine.rank, -1);
   assert.equal(r2.engine.from, "이잘키");
-  assert.ok(r2.advice.some((a) => a.level === "mid" && a.text.startsWith("W-엔진이 커터칼")));
+  assert.ok(r2.advice.some((a) => a.level === "mid" && a.text.startsWith("W-엔진 비권장 / 현재 커터칼")));
   const r3 = E.evaluate({ ...av, weapon: null }, B, "good");
-  assert.ok(r3.advice[0].text.startsWith("W-엔진이 없습니다"));
+  assert.ok(r3.advice[0].text.startsWith("W-엔진 없음"));
   console.log("W-엔진 테스트 통과");
+}
+{ // 456 조건이 하나도 맞지 않으면 "불일치"로 안내하고, 사용자가 다른 조건을 고를 수 있다
+  const av = { ...fx.data.avatar_list[0], name_mi18n: "미야비", full_name_mi18n: "호시미 미야비" };
+  const r1 = E.evaluate(av, B, "good").tiers.good.result;
+  console.log("미야비 conds:", JSON.stringify(r1.conds));
+  assert.deepEqual(r1.conds, [{ kind: "조건 불일치", picked: "456 치관공", options: ["456 치관공", "456 공관공"] }]);
+  assert.equal(r1.checks.find((c) => c.stat === "ATK").need, 2900);
+  const r2 = E.evaluate(av, B, "good", "456 공관공").tiers.good.result;
+  assert.equal(r2.conds[0].picked, "456 공관공");
+  assert.equal(r2.checks.find((c) => c.stat === "ATK").need, 3400);
+  assert.deepEqual(r1.checks.find((c) => c.stat === "ATK").alts, [{ cond: "456 공관공", need: 3400 }]);
+  assert.deepEqual(r2.checks.find((c) => c.stat === "ATK").alts, [{ cond: "456 치관공", need: 2900 }]);
+  console.log("456 조건 선택 테스트 통과");
 }

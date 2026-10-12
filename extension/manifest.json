@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ZZZ 디스크 어드바이저",
+  "name": "ZZZ 디스크 페어리",
   "version": "1.0.0",
   "icons": {
     "16": "icons/icon16.png",
@@ -10,7 +10,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "ZZZ 디스크 어드바이저"
+    "default_title": "ZZZ 디스크 페어리"
   },
   "description": "HoYoLAB 전적 페이지에서 에이전트를 열면 장착한 디스크를 세팅 시트 기준으로 평가합니다.",
   "content_scripts": [

@@ -1,7 +1,7 @@
 // 격리된 content script: inject.js가 넘긴 응답을 평가해서 패널로 그린다.
 // 디자인: docs/DESIGN.md (Apple 계열 — Parchment 서피스, 단일 Action Blue, pill 칩, 그림자 없음)
 (() => {
-  let host, shadow, lastAvatar;
+  let host, shadow, lastAvatar, pick = null; // pick: 조건이 맞지 않을 때 사용자가 고른 목표 조건 (에이전트가 바뀌면 초기화)
   const KEY = "zzzDiscAdvisor.tier";
   let tier = "good";
   try { tier = localStorage.getItem(KEY) || "good"; } catch (e) {}
@@ -47,7 +47,7 @@
   }
 
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856";
-  const ISSUE_URL = "https://github.com/ManaP0tion/ZZZ_Setting_Extension/issues/new";
+  const ISSUE_URL = "https://github.com/ManaP0tion/ZZZ_Disk_Fairy/issues/new";
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   const CSS = `
@@ -59,7 +59,7 @@
     --surface: #f5f5f7; --header: rgba(245, 245, 247, 0.8); --card: #ffffff;
     --hairline: #e0e0e0; --divider: #f0f0f0; --chip: rgba(210, 210, 215, 0.64);
     --valid-bg: #f5f5f7; --meter-off: #e0e0e0;
-    --pass: #0a84c8; --pass-bg: #e6f4fc; --fail: #d70015; --fail-bg: #fdecee;
+    --pass: #0a84c8; --pass-bg: #e6f4fc; --good: #248a3d; --zzz: #e8740c; --fail: #d70015; --fail-bg: #fdecee;
     --display: "Pretendard Variable", Pretendard, "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
     --text: "Pretendard Variable", Pretendard, "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
     position: fixed; top: 72px; right: 24px; z-index: 2147483647;
@@ -77,7 +77,7 @@
       --surface: #1d1d1f; --header: rgba(29, 29, 31, 0.8); --card: #272729;
       --hairline: #3a3a3c; --divider: #323234; --chip: rgba(118, 118, 128, 0.36);
       --valid-bg: #353537; --meter-off: #3a3a3c;
-      --pass: #64d2ff; --pass-bg: rgba(100, 210, 255, 0.14); --fail: #ff6961; --fail-bg: rgba(255, 105, 97, 0.14);
+      --pass: #64d2ff; --pass-bg: rgba(100, 210, 255, 0.14); --good: #30d158; --zzz: #f68b2e; --fail: #ff6961; --fail-bg: rgba(255, 105, 97, 0.14);
       color-scheme: dark;
     }
   }
@@ -88,7 +88,7 @@
       --surface: #1d1d1f; --header: rgba(29, 29, 31, 0.8); --card: #272729;
       --hairline: #3a3a3c; --divider: #323234; --chip: rgba(118, 118, 128, 0.36);
       --valid-bg: #353537; --meter-off: #3a3a3c;
-      --pass: #64d2ff; --pass-bg: rgba(100, 210, 255, 0.14); --fail: #ff6961; --fail-bg: rgba(255, 105, 97, 0.14);
+      --pass: #64d2ff; --pass-bg: rgba(100, 210, 255, 0.14); --good: #30d158; --zzz: #f68b2e; --fail: #ff6961; --fail-bg: rgba(255, 105, 97, 0.14);
       color-scheme: dark;
     }
   .scroll { overflow: auto; overscroll-behavior: contain; min-height: 0; }
@@ -121,6 +121,11 @@
 
   /* 요약 */
   .summary { display: grid; gap: 6px; }
+  .cnote { justify-self: start; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: var(--chip);
+    font: 400 12px/1.4 var(--text); letter-spacing: -0.12px; color: var(--ink-80); }
+  .pick { all: unset; cursor: pointer; padding: 2px 8px; border-radius: 9999px; border: 1px solid var(--hairline); background: var(--card); color: var(--ink); }
+  .pick[aria-pressed="true"] { border-color: var(--primary-focus); color: var(--primary); font-weight: 600; }
+  .pick:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
   .summary .big { font: 600 21px/1.19 var(--display); letter-spacing: 0.231px; }
 
   /* store-utility-card */
@@ -138,13 +143,17 @@
   .discs { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
   .disc { display: grid; grid-template-columns: 40px 1fr auto; gap: 2px 12px; align-items: start;
     background: var(--card); border: 1px solid var(--hairline); border-radius: 18px; padding: 16px; }
+  .disc.bad { border: 2px solid var(--zzz); padding: 15px; }
   .slot { grid-row: span 3; display: grid; justify-items: center; gap: 6px; font: 600 21px/1.19 var(--display); color: var(--ink-60); font-variant-numeric: tabular-nums; }
   .slot img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; background: var(--valid-bg); }
   .set { font: 600 15px/1.29 var(--text); letter-spacing: -0.24px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .score { grid-row: span 2; text-align: right; display: grid; justify-items: end; }
   .score b { font: 600 21px/1.19 var(--display); font-variant-numeric: tabular-nums; }
   .score span { font: 400 12px/1.3 var(--text); color: var(--ink-60); white-space: nowrap; }
-  .score.bad span { color: var(--ink); font-weight: 600; }
+  /* 등급 색: 우수 파랑, 양호 초록, 교체 후보 젠존제 주황 (보통은 기본색) */
+  .score.great { --g: var(--pass); } .score.ok { --g: var(--good); } .score.bad { --g: var(--zzz); }
+  .score.great span, .score.ok span, .score.bad span { color: var(--g); font-weight: 600; }
+  .score.great .meter i.on, .score.ok .meter i.on, .score.bad .meter i.on { background: var(--g); }
   .meter { display: flex; gap: 2px; margin-top: 4px; }
   .meter i { width: 8px; height: 3px; border-radius: 2px; background: var(--meter-off); }
   .meter i.on { background: var(--ink); }
@@ -191,6 +200,7 @@
   .goalbox.ok .st { color: var(--pass); }
   .goalbox.no .st { color: var(--fail); }
   .goalbox .v { font: 600 21px/1.2 var(--display); }
+  .goalbox .alt { font: 400 11px/1.3 var(--text); color: var(--ink-60); }
   .goalbox.ok .v { color: var(--pass); }
   .goalbox.no .v { color: var(--fail); }
   .goalbox .v small { font: 400 13px/1 var(--text); color: var(--ink-60); margin-left: 4px; }
@@ -225,7 +235,8 @@
     const r = t.result;
     if (!r || r.pass === null)
       return `<div class="summary"><div class="big">${esc(t.label)} 기준 없음</div><p class="fine">${esc((r && r.reason) || "평가할 기준이 없습니다.")}</p></div>`;
-    const note = r.note ? `<p class="fine">${esc(r.note)}</p>` : "";
+    const note = (r.conds || []).map((c) => `<div class="cnote"><span>${esc(c.kind)} / 기준 선택</span>` +
+      c.options.map((o) => `<button class="pick" data-pick="${esc(o)}" aria-pressed="${o === c.picked}">${esc(o)}</button>`).join("") + `</div>`).join("");
     if (r.pass) return `<div class="summary"><div class="big">${esc(t.label)} 기준 달성</div>${note}</div>`;
     const n = r.checks.filter((c) => c.gap > 0).length;
     return `<div class="summary"><div class="big">${esc(t.label)} 기준까지 ${n}개 부족</div>${note}</div>`;
@@ -240,7 +251,8 @@
     const boxes = r.checks.map((c) => {
       const ok = c.gap <= 0;
       return `<div class="goalbox ${ok ? "ok" : "no"}"><span class="k">${esc(c.label)}<span class="st">${ok ? "달성 ✓" : `−${esc(fmtGap(c))}`}</span></span>` +
-        `<span class="v">${esc(n(c.cur, c.pct))}<small>/ ${esc(n(c.need, c.pct))}</small></span></div>`;
+        `<span class="v">${esc(n(c.cur, c.pct))}<small>/ ${esc(n(c.need, c.pct))}</small></span>` +
+        (c.alts && c.alts.length ? `<span class="alt">${c.alts.map((a) => `${esc(a.cond)}: ${esc(n(a.need, c.pct))}`).join("<br>")}</span>` : "") + `</div>`;
     });
     return `<section><h3>목표 스탯</h3><div class="goals">${boxes.join("")}</div></section>`;
   }
@@ -297,8 +309,8 @@
       .join("");
     const lit = Math.max(0, Math.min(8, Math.round(d.eff)));
     const meter = Array.from({ length: 8 }, (_, i) => `<i class="${i < lit ? "on" : ""}"></i>`).join("");
-    return `<div class="disc"><div class="slot"><span>${d.slot}</span>${d.icon ? `<img src="${esc(d.icon)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}</div><div class="set" title="${esc(d.name)}">${esc(d.set || d.name)}</div>
-      <div class="score ${d.grade.key === "bad" ? "bad" : ""}"><b>${d.eff}</b><span>${esc(d.grade.text)}</span><div class="meter" aria-hidden="true">${meter}</div></div>
+    return `<div class="disc${d.grade.key === "bad" ? " bad" : ""}"><div class="slot"><span>${d.slot}</span>${d.icon ? `<img src="${esc(d.icon)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}</div><div class="set" title="${esc(d.name)}">${esc(d.set || d.name)}</div>
+      <div class="score ${d.grade.key}"><b>${d.eff}</b><span>${esc(d.grade.text)}</span><div class="meter" aria-hidden="true">${meter}</div></div>
       ${mainHtml}<div class="subs">${subs}</div></div>`;
   }
 
@@ -373,7 +385,13 @@
       b.addEventListener("click", () => {
         tier = b.dataset.tier;
         try { localStorage.setItem(KEY, tier); } catch (e) {}
-        render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier));
+        render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
+      })
+    );
+    shadow.querySelectorAll("[data-pick]").forEach((b) =>
+      b.addEventListener("click", () => {
+        pick = b.dataset.pick;
+        render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
       })
     );
   }
@@ -383,8 +401,9 @@
     const list = ev.data.payload && ev.data.payload.data && ev.data.payload.data.avatar_list;
     if (!list || !list.length) return;
     lastAvatar = list[0];
+    pick = null;
     rememberIcons(lastAvatar);
-    const draw = () => render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier));
+    const draw = () => render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
     if (document.body) draw();
     else document.addEventListener("DOMContentLoaded", draw, { once: true });
   });

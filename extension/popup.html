@@ -10,13 +10,15 @@
   .top img { width: 32px; height: 32px; }
   h1 { margin: 0; font-size: 16px; font-weight: 600; }
   p { margin: 0 0 16px; color: var(--ink-60); }
-  button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 10px; border-radius: 9999px; cursor: pointer;
-    background: var(--primary); color: #fff; text-align: center; font-weight: 600; font-size: 14px; }
+  button { all: unset; box-sizing: border-box; width: 100%; padding: 10px; border-radius: 9999px; cursor: pointer;
+    background: var(--primary); color: #fff; font-weight: 600; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px; }
+  button img { width: 30px; height: 30px; border-radius: 7px; margin: -6px 0; }
   button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   button:active { transform: scale(0.97); }
 </style>
-<div class="top"><img src="icons/icon48.png" alt=""><h1>ZZZ 디스크 어드바이저</h1></div>
-<p>HoYoLAB 전적 페이지에서 에이전트를 누르면 오른쪽에 디스크 평가 패널이 나타납니다.</p>
-<button id="go">전적 보러 가기</button>
+<div class="top"><img src="icons/icon48.png" alt=""><h1>ZZZ 디스크 페어리</h1></div>
+<p>마스터, HoYoLAB 전적 페이지에서 에이전트를 선택해 주세요. 디스크 분석은 페어리가 맡겠습니다</p>
+<button id="go"><img src="icons/zzz.png" alt="">전적 보러 가기</button>
 <script src="popup.js"></script>
 </html>

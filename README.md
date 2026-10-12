@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="extension/icons/icon128.png" width="96" alt="ZZZ 디스크 어드바이저 아이콘">
-  <h1>ZZZ 디스크 어드바이저</h1>
+  <img src="extension/icons/icon128.png" width="96" alt="ZZZ 디스크 페어리 아이콘">
+  <h1>ZZZ 디스크 페어리</h1>
   <p align="center">
   <a href="https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi">
-    <img src="images/store-promo-440x280.png" width="440" alt="ZZZ 디스크 어드바이저 홍보 이미지">
+    <img src="images/store-promo-440x280.png" width="440" alt="ZZZ 디스크 페어리 홍보 이미지">
   </a>
 </p>
   <p>젠레스 존 제로(ZZZ) 에이전트가 장착한 디스크를 평가해 주는 크롬 확장 프로그램입니다.</p>

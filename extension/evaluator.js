@@ -165,7 +165,9 @@
     return null;
   }
 
-  // 같은 스탯에 대해 조건 충족 항목 우선 → 무조건 항목 → (조건만 있고 판정 불가/불충족이면) 첫 항목을 가정
+  const condText = (cond) => cond.text || `${cond.slot}번 주옵 ${cond.main}`;
+
+  // 같은 스탯에 대해 조건 충족 항목 우선 → 무조건 항목 → (조건만 있고 판정 불가/불충족이면) 사용자가 고른 조건, 없으면 첫 항목을 가정
   function pickTargets(list, c, keyOf) {
     const by = {};
     for (const t of list || []) {
@@ -176,7 +178,11 @@
     for (const k in by) {
       const withCond = by[k].filter((t) => t.cond && condOk(t.cond, c) === true);
       const plain = by[k].filter((t) => !t.cond);
-      const chosen = withCond[0] || plain[0] || (by[k][0] && { ...by[k][0], assumed: true });
+      // unknown: 판정 불가 조건이 있음 / 아니면 조건을 전부 판정했지만 하나도 맞지 않음
+      const fallback = by[k].find((t) => c.pick && t.cond && condText(t.cond) === c.pick) || by[k][0];
+      const chosen = withCond[0] || plain[0] || (fallback && { ...fallback, assumed: true,
+        unknown: by[k].some((t) => condOk(t.cond, c) === null), options: by[k].filter((t) => t.cond).map((t) => condText(t.cond)),
+        alts: by[k].filter((t) => t.cond && t !== fallback) });
       if (chosen) res.push(chosen);
     }
     return res;
@@ -189,14 +195,14 @@
     for (const t of pickTargets(entry.targets, cc, (t) => t.stat)) {
       const cur = stats[t.stat];
       if (cur == null) { missing.push(label(t.stat)); continue; }
-      checks.push({ stat: t.stat, label: label(t.stat), need: t.min, max: t.max, cur, gap: Math.max(0, t.min - cur), raw: t.raw, assumed: !!t.assumed, cond: t.cond });
+      checks.push({ stat: t.stat, label: label(t.stat), need: t.min, max: t.max, cur, gap: Math.max(0, t.min - cur), raw: t.raw, assumed: !!t.assumed, unknown: !!t.unknown, options: t.options, alts: (t.alts || []).map((a) => ({ cond: condText(a.cond), need: a.min })), cond: t.cond });
     }
     const crit = pickTargets(entry.crit, cc, () => "crit")[0];
     if (crit) {
       for (const k of ["CR", "CD"]) {
         if (crit[k] == null) continue;
         if (stats[k] == null) { missing.push(label(k)); continue; }
-        checks.push({ stat: k, label: label(k), need: crit[k], cur: stats[k], gap: Math.max(0, +(crit[k] - stats[k]).toFixed(1)), raw: crit.raw, pct: true, assumed: !!crit.assumed, cond: crit.cond });
+        checks.push({ stat: k, label: label(k), need: crit[k], cur: stats[k], gap: Math.max(0, +(crit[k] - stats[k]).toFixed(1)), raw: crit.raw, pct: true, assumed: !!crit.assumed, unknown: !!crit.unknown, options: crit.options, alts: (crit.alts || []).filter((a) => a[k] != null).map((a) => ({ cond: condText(a.cond), need: a[k] })), cond: crit.cond });
       }
     }
     if (!checks.length) {
@@ -207,12 +213,17 @@
       else { reason = `시트 표기 “${raw}”를 수치 기준으로 해석하지 못했습니다.`; short = "해석 불가"; }
       return { pass: null, checks, reason, short };
     }
-    const assumed = checks.filter((x) => x.assumed && x.cond).map((x) => x.cond.text || `${x.cond.slot}번 주옵 ${x.cond.main}`);
-    const note = assumed.length ? `장착 정보만으로는 조건(${[...new Set(assumed)].join(", ")})을 확인할 수 없어서, 시트에 첫 번째로 적힌 목표를 적용했습니다.` : null;
-    return { pass: checks.every((x) => x.gap <= 0), checks, note };
+    // 조건을 맞추지 못해 가정한 목표: 사용자가 다른 조건으로 바꿀 수 있게 선택지와 함께 넘긴다
+    const conds = [];
+    for (const x of checks.filter((x) => x.assumed && x.cond)) {
+      const picked = condText(x.cond);
+      if (conds.some((n) => n.picked === picked)) continue;
+      conds.push({ kind: x.unknown ? "조건 확인 불가" : "조건 불일치", picked, options: [...new Set(x.options)] });
+    }
+    return { pass: checks.every((x) => x.gap <= 0), checks, conds };
   }
 
-  function evaluate(avatar, bench, sel) {
+  function evaluate(avatar, bench, sel, pick) {
     sel = sel || "good";
     const T = bench.tiers;
     const entries = { basic: findAgent(T.basic, avatar), good: findAgent(T.good, avatar), max: findAgent(T.max, avatar) };
@@ -242,11 +253,11 @@
         d.mainAllowed = (statRef.mains[d.slot] || []);
         d.mainOk = allowed.length ? allowed.includes(d.main && d.main.key) : null;
         if (d.mainOk === false)
-          advice.push({ level: "high", text: `${d.slot}번 주옵이 ${d.main.label}입니다. 권장 주옵은 ${d.mainAllowed.join(" / ")}입니다.` });
+          advice.push({ level: "high", text: `${d.slot}번 주옵 부적합 / 현재 ${d.main.label} · 권장 ${d.mainAllowed.join(", ")}` });
       }
     }
     const missing = [1, 2, 3, 4, 5, 6].filter((s) => !discs.some((d) => d.slot === s));
-    if (missing.length) advice.unshift({ level: "high", text: `${missing.join(", ")}번 슬롯이 비어 있습니다.` });
+    if (missing.length) advice.unshift({ level: "high", text: `${missing.join(", ")}번 슬롯 비어 있음` });
 
     // 2) 세트 판정
     const counts = {};
@@ -259,12 +270,12 @@
       if (ref.set4 && ref.set4.length) {
         setInfo.set4Ok = !!four && ref.set4.some((t) => setMatches(t, four));
         if (!setInfo.set4Ok)
-          advice.push({ level: "mid", text: `${four ? `4세트가 ${four}입니다.` : "4세트 효과가 없습니다."} 권장 4세트는 ${ref.set4.join(" / ")}입니다.` });
+          advice.push({ level: "mid", text: `4세트 불일치 / 현재 ${four || "없음"} · 권장 ${ref.set4.join(", ")}` });
       }
       if (ref.set2 && ref.set2.length) {
         setInfo.set2Ok = twos.some((n) => ref.set2.some((t) => setMatches(t, n)));
         if (!setInfo.set2Ok)
-          advice.push({ level: "mid", text: `${twos.length ? `2세트가 ${twos.join(", ")}입니다.` : "2세트 효과가 없습니다."} 권장 2세트는 ${ref.set2.join(" / ")}입니다.` });
+          advice.push({ level: "mid", text: `2세트 불일치 / 현재 ${twos.join(", ") || "없음"} · 권장 ${ref.set2.join(", ")}` });
       }
     }
 
@@ -282,19 +293,19 @@
       });
       const idx = recs.findIndex((r) => r.on);
       engine = { name: weaponName || null, icon: (w && w.icon) || null, star: (w && w.star) || null, recs, rank: idx, note: engRef.wengineNote || null, from: tierLabelOf(engRef) };
-      if (!weaponName) advice.unshift({ level: "high", text: `W-엔진이 없습니다. 권장 W-엔진은 ${recs.map((r) => r.name).join(" / ")}입니다.` });
-      else if (idx < 0) advice.push({ level: "mid", text: `W-엔진이 ${weaponName}입니다. 시트 권장 W-엔진은 ${recs.map((r) => r.name).join(" / ")}입니다.` });
+      if (!weaponName) advice.unshift({ level: "high", text: `W-엔진 없음 / 권장 ${recs.map((r) => r.name).join(", ")}` });
+      else if (idx < 0) advice.push({ level: "mid", text: `W-엔진 비권장 / 현재 ${weaponName} · 권장 ${recs.map((r) => r.name).join(", ")}` });
     }
 
     // 4) 낮은 점수 디스크
     const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).sort((a, b) => a.eff - b.eff);
     weak.forEach((d, i) =>
-      advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크는 교체를 고려해 보세요. 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
+      advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크 교체 고려 대상 / 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
     );
 
     // 5) 등급별 목표 스탯
     const tiers = {};
-    const ctxBase = { discs, rank: avatar.rank ?? null, setCounts: counts, weapon: weaponName || null };
+    const ctxBase = { discs, rank: avatar.rank ?? null, setCounts: counts, weapon: weaponName || null, pick: pick || null };
     for (const k of ["basic", "good", "max"])
       tiers[k] = { label: T[k].label, entry: entries[k], result: checkTier(entries[k], stats, ctxBase, T[k].label, avatar.name_mi18n) };
     const selRes = tiers[sel] && tiers[sel].result;
@@ -308,7 +319,7 @@
       advice.push({ level: "info", text: `${tiers[sel].label} 기준 목표 스탯을 모두 달성했습니다.` });
     }
     for (const c of (selRes && selRes.checks) || []) {
-      if (c.max && c.cur > c.max) advice.push({ level: "info", text: `${c.label} 수치(${c.cur})가 권장 상한(${c.max})을 넘었습니다. 시트 메모를 확인하세요.` });
+      if (c.max && c.cur > c.max) advice.push({ level: "info", text: `${c.label} 권장 상한 초과 / 현재 ${c.cur} · 상한 ${c.max}` });
     }
 
     const order = { high: 0, mid: 1, low: 2, info: 3 };
