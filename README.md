@@ -2,12 +2,9 @@
   <img src="extension/icons/icon128.png" width="96" alt="ZZZ 디스크 페어리 아이콘">
   <h1>ZZZ 디스크 페어리</h1>
   <p align="center">
-  <a href="https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi">
     <img src="images/store-promo-440x280.png" width="440" alt="ZZZ 디스크 페어리 홍보 이미지">
-  </a>
 </p>
   <p>젠레스 존 제로(ZZZ) 에이전트가 장착한 디스크를 평가해 주는 크롬 확장 프로그램입니다.</p>
-  <p><a href="https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi"><b>크롬 웹스토어 링크</b></a></p>
 </div>
 
 ## 무엇을 알려주나요?
@@ -27,12 +24,22 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
   <img src="images/panel-screenshot.png" width="800" alt="HoYoLAB 전적 페이지 오른쪽에 디스크 평가 패널이 열린 화면">
 </p>
 
+## 설치 방법
+
+크롬 웹 스토어 등록은 아직 준비 중입니다. 지금은 압축 파일을 내려받아 직접 설치합니다.
+
+1. 이 저장소 페이지에서 **Code → Download ZIP**을 눌러 파일을 내려받고 압축을 풉니다.
+2. 크롬 주소창에 `chrome://extensions`를 입력해서 확장 프로그램 관리 페이지를 엽니다.
+3. 오른쪽 위의 **개발자 모드**를 켭니다.
+4. **압축해제된 확장 프로그램을 로드합니다** 버튼을 누르고, 압축을 푼 폴더 안의 `extension` 폴더를 선택합니다.
+
+이렇게 설치한 확장 프로그램은 자동으로 업데이트되지 않습니다. 새 버전을 쓰려면 ZIP 파일을 다시 내려받아 같은 위치에 덮어쓴 다음, 확장 프로그램 관리 페이지에서 새로고침 버튼을 누릅니다.
+
 ## 사용 방법
 
-1. [크롬 웹 스토어](https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi)에서 확장 프로그램을 설치합니다.
-2. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. 확장 프로그램 아이콘을 누르고 **전적 보러 가기**를 눌러도 됩니다. 페이지가 이미 열려 있었다면 새로고침합니다.
-3. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
-4. 오른쪽에 나타난 패널에서 평가 결과를 확인합니다.
+1. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. 확장 프로그램 아이콘을 누르고 **전적 보러 가기**를 눌러도 됩니다. 페이지가 이미 열려 있었다면 새로고침합니다.
+2. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
+3. 오른쪽에 나타난 패널에서 평가 결과를 확인합니다.
 
 패널 상단에서는 평가 기준이 되는 등급을 바꿀 수 있습니다. 패널 왼쪽 가장자리를 드래그하면 폭을 넓힐 수 있고, 두 번 클릭하면 원래 폭으로 돌아갑니다.
 
