@@ -12,18 +12,13 @@ HoYoLAB 전적 페이지에서 에이전트를 클릭하면, 화면 오른쪽에
 
 평가 기준은 [ZZZ 세팅 시트](https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856)를 따릅니다. 시트 제작자에게 허락을 받고 사용하고 있습니다.
 
-## 설치 방법
-
-1. 이 저장소를 내려받습니다. (초록색 `Code` 버튼 → `Download ZIP` → 압축 해제)
-2. 크롬 주소창에 `chrome://extensions`를 입력합니다.
-3. 오른쪽 위의 **개발자 모드**를 켭니다.
-4. **압축해제된 확장 프로그램을 로드합니다**를 누르고, 내려받은 폴더 안의 `extension` 폴더를 선택합니다.
 
 ## 사용 방법
 
-1. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. (이미 열려 있었다면 새로고침합니다.)
-2. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
-3. 오른쪽에 나타난 패널에서 결과를 확인합니다.
+1. [크롬 웹 스토어](https://chromewebstore.google.com/detail/dodpdhlpllmkhbohknhlcbcalbkaklmi)에서 확장 프로그램을 설치합니다.
+2. [HoYoLAB 전적 페이지](https://act.hoyolab.com/app/zzz-game-record/)에 접속합니다. (이미 열려 있었다면 새로고침합니다.)
+3. 에이전트 목록에서 확인하고 싶은 에이전트를 클릭합니다.
+4. 오른쪽에 나타난 패널에서 결과를 확인합니다.
 
 패널 상단에서 기준 등급을 바꿀 수 있습니다.
 
