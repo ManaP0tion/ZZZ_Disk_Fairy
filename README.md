@@ -1,6 +1,9 @@
 <div align="center">
   <img src="extension/icons/icon128.png" width="96" alt="ZZZ 디스크 페어리 아이콘">
   <h1>ZZZ 디스크 페어리</h1>
+  <a href="https://chromewebstore.google.com/detail/jjmgmcmclnplkihipekfgngnjfckklca"><img src="https://img.shields.io/chrome-web-store/v/jjmgmcmclnplkihipekfgngnjfckklca?label=Chrome%20Web%20Store" alt="Chrome Web Store"></a>
+  <a href="https://chromewebstore.google.com/detail/jjmgmcmclnplkihipekfgngnjfckklca"><img src="https://img.shields.io/chrome-web-store/users/jjmgmcmclnplkihipekfgngnjfckklca" alt="Chrome Web Store Users"></a>
+  <a href="https://developer.chrome.com/docs/extensions/mv3/intro/"><img src="https://img.shields.io/badge/Manifest-V3-blue" alt="Manifest V3"></a>
   <p align="center">
     <img src="images/store-promo-440x280.png" width="440" alt="ZZZ 디스크 페어리 홍보 이미지">
 </p>
