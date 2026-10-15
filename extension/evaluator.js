@@ -203,7 +203,7 @@
       for (const k of ["CR", "CD"]) {
         if (crit[k] == null) continue;
         if (stats[k] == null) { missing.push(label(k)); continue; }
-        checks.push({ stat: k, label: label(k), need: crit[k], cur: stats[k], gap: Math.max(0, +(crit[k] - stats[k]).toFixed(1)), raw: crit.raw, pct: true, assumed: !!crit.assumed, unknown: !!crit.unknown, options: crit.options, alts: (crit.alts || []).filter((a) => a[k] != null).map((a) => ({ cond: condText(a.cond), need: a[k] })), cond: crit.cond });
+        checks.push({ stat: k, label: label(k), need: crit[k], cur: stats[k], gap: crit[k] - stats[k] <= 1 ? 0 : +(crit[k] - stats[k]).toFixed(1), raw: crit.raw, pct: true, assumed: !!crit.assumed, unknown: !!crit.unknown, options: crit.options, alts: (crit.alts || []).filter((a) => a[k] != null).map((a) => ({ cond: condText(a.cond), need: a[k] })), cond: crit.cond });
       }
     }
     if (!checks.length) {
@@ -329,7 +329,7 @@
       statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, discs, stats, setInfo, tiers, advice, weights };
   }
 
-  const api = { evaluate, statKey, setMatches, label };
+  const api = { evaluate, checkTier, statKey, setMatches, label };
   root.ZZZEval = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

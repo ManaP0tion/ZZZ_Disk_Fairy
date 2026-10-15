@@ -51,3 +51,11 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.deepEqual(r2.checks.find((c) => c.stat === "ATK").alts, [{ cond: "456 치관공", need: 2900 }]);
   console.log("456 조건 선택 테스트 통과");
 }
+{ // 치확·치피는 1% 이내 부족까지 통과로 본다
+  const entry = { crit: [{ CR: 80, CD: 130, raw: "치확 80 치피 130" }] };
+  const r = (cr, cd) => E.checkTier(entry, { CR: cr, CD: cd }, {}, "테스트", "테스트");
+  assert.equal(r(79, 129).pass, true);
+  assert.equal(r(78.9, 130).pass, false);
+  assert.equal(r(78.5, 130).checks[0].gap, 1.5);
+  console.log("치명타 허용 오차 테스트 통과");
+}
