@@ -48,11 +48,7 @@
 
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/edit?gid=2007866856#gid=2007866856";
   const ISSUE_URL = "https://github.com/ManaP0tion/ZZZ_Disk_Fairy/issues/new";
-  const MANIFEST_URL = "https://raw.githubusercontent.com/ManaP0tion/ZZZ_Disk_Fairy/main/extension/manifest.json";
-  const ZIP_URL = "https://github.com/ManaP0tion/ZZZ_Disk_Fairy/archive/refs/heads/main.zip";
-  const newer = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number);
-    for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
-    return false; };
+  const STORE_URL = "https://chromewebstore.google.com/detail/jjmgmcmclnplkihipekfgngnjfckklca";
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   const CSS = `
@@ -354,7 +350,7 @@
             <p class="fine" style="margin-top:8px">오른쪽 숫자는 유효한 부옵이 강화된 횟수이며, 가중치를 반영해서 계산합니다. 배경색이 있는 부옵이 유효 옵션이고, +n은 그 부옵이 강화된 횟수입니다.</p>${borrowed}</section>
           ${notes ? `<details open><summary>시트 원문 메모</summary><pre>${esc(notes)}</pre></details>` : ""}
           <div class="foot"><p class="fine">기준 시트 · <a href="${SHEET_URL}" target="_blank" rel="noopener">${esc(window.ZZZ_BENCHMARK.version || "")}</a></p>
-            <div class="btns"><a class="btn" id="upd" href="#">업데이트 확인</a><a class="btn" href="${ISSUE_URL}" target="_blank" rel="noopener">개선사항 건의</a></div></div>
+            <div class="btns"><a class="btn" href="${STORE_URL}" target="_blank" rel="noopener">업데이트 확인</a><a class="btn" href="${ISSUE_URL}" target="_blank" rel="noopener">개선사항 건의</a></div></div>
         </div>
         </div>
       </div>`;
@@ -381,20 +377,6 @@
       };
     };
     grip.ondblclick = () => { width = 400; shadow.querySelector(".panel").style.setProperty("--w", "400px"); try { localStorage.removeItem(WIDTH_KEY); } catch (err) {} };
-    shadow.getElementById("upd").onclick = async (e) => {
-      const a = e.currentTarget;
-      if (a.target) return; // 새 버전 링크로 바뀐 뒤에는 그대로 연다
-      e.preventDefault();
-      a.textContent = "확인 중…";
-      try {
-        const cur = chrome.runtime.getManifest().version;
-        const latest = (await (await fetch(MANIFEST_URL, { cache: "no-store" })).json()).version;
-        if (newer(latest, cur)) {
-          a.textContent = `v${latest} 받기`;
-          a.href = ZIP_URL; a.target = "_blank"; a.rel = "noopener";
-        } else a.textContent = `최신 버전 (v${cur})`;
-      } catch (err) { a.textContent = "확인 실패"; }
-    };
     shadow.getElementById("close").onclick = () => host.remove();
     shadow.getElementById("min").onclick = (e) => {
       const p = shadow.querySelector(".panel");

@@ -1,0 +1,51 @@
+name: Sheet Sync
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 매일 09:00 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install openpyxl
+
+      - name: Download sheet and convert
+        run: |
+          curl -fsSL -o data/sheet.xlsx "https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/export?format=xlsx"
+          python tools/convert.py data/sheet.xlsx extension/data/benchmark.js
+
+      # xlsx는 내려받을 때마다 바이트가 달라지므로 benchmark.js 변화로만 판단한다
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet extension/data/benchmark.js; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$(grep -m1 '"version"' extension/data/benchmark.js | cut -d'"' -f4)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: sheet-sync
+          add-paths: extension/data/benchmark.js
+          commit-message: "data: 시트 갱신 (${{ steps.diff.outputs.version }})"
+          title: "시트 갱신: ${{ steps.diff.outputs.version }}"
+          body: |
+            세팅 시트가 바뀌어 `benchmark.js`를 다시 생성했습니다.
+            병합하기 전에 diff에서 빈 행, 새 엔진/세트 이름(`ENGINE_FIX`, `SET_FIX`), `note`로 빠진 조건을 확인하세요.
+            배포하려면 `manifest.json` 버전을 올려야 합니다.
