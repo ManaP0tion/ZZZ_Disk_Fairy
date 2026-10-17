@@ -42,9 +42,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           branch: sheet-sync
-          add-paths: |
-            data/sheet.xlsx
-            extension/data/benchmark.js
+          add-paths: extension/data/benchmark.js
           commit-message: "data: 시트 갱신 (${{ steps.diff.outputs.version }})"
           title: "시트 갱신: ${{ steps.diff.outputs.version }}"
           body: |

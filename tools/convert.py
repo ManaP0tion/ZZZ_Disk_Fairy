@@ -163,6 +163,9 @@ def parse_tab(ws, cols):
         e["crit"] = parse_crit(cell(ws, r, cols["crit"]))
         e["critRaw"] = cell(ws, r, cols["crit"]).replace("\n", " ")
         e["note"] = cell(ws, r, cols["note"])
+        # 이름·특성만 있고 기준이 아직 비어 있는 행은 빼서 "시트에 없음"으로 처리되게 한다
+        if not any(e.get(k) for k in ("wengine", "set4", "set2", "subs", "targets", "crit", "note")):
+            continue
         rows.append(e)
     return rows
 

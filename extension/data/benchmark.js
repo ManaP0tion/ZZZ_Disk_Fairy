@@ -1,6 +1,6 @@
 // 자동 생성: tools/convert.py
 window.ZZZ_BENCHMARK = {
- "version": "젠레스 존 제로 이잘키 세팅 3.1V",
+ "version": "젠레스 존 제로 이잘키 세팅 3.2V",
  "tiers": {
   "basic": {
    "label": "응애",
@@ -2332,7 +2332,7 @@ window.ZZZ_BENCHMARK = {
   "good": {
    "label": "이잘키",
    "sheet": "세팅",
-   "title": "젠레스 존 제로 이잘키 세팅 3.1V",
+   "title": "젠레스 존 제로 이잘키 세팅 3.2V",
    "agents": [
     {
      "name": "레미엘",
@@ -3532,6 +3532,66 @@ window.ZZZ_BENCHMARK = {
      "crit": [],
      "critRaw": "",
      "note": "메인 딜러 세팅 > 송곳니 4셋\n서브 혼돈 딜러 세팅 > 블루스 4셋"
+    },
+    {
+     "name": "피닉스",
+     "spec": "이상",
+     "wengine": [
+      "열반의 첫 깃[전엔]",
+      "껍데기 속 영혼[아리아]",
+      "감입 컴파일러[그레이스]",
+      "감전 립글로스"
+     ],
+     "wengineNote": "",
+     "set4": [
+      "자유의 블루스"
+     ],
+     "set2": [
+      "파에톤의 노래"
+     ],
+     "mains": {
+      "4": [
+       "이상 마스터리"
+      ],
+      "5": [
+       "불 피해",
+       "관통률",
+       "공격력"
+      ],
+      "6": [
+       "이상 장악력"
+      ]
+     },
+     "subs": [
+      {
+       "name": "이상 마스터리",
+       "weight": 1.0,
+       "raw": "이상 마스터리"
+      },
+      {
+       "name": "공격력%",
+       "weight": 1.0,
+       "raw": "공격력%"
+      }
+     ],
+     "targets": [
+      {
+       "stat": "ATK",
+       "min": 2500,
+       "max": null,
+       "raw": "공 2500"
+      },
+      {
+       "stat": "AP",
+       "min": 330,
+       "max": null,
+       "raw": "이상마 330"
+      }
+     ],
+     "targetsRaw": "공 2500 이상마 330 이상 장악력 255",
+     "crit": [],
+     "critRaw": "",
+     "note": "전엔 사용시 확정 치명타 발생\n치명타 피해는 고정값"
     },
     {
      "name": "노르마",
@@ -6978,6 +7038,33 @@ window.ZZZ_BENCHMARK = {
      ],
      "critRaw": "65 / 170",
      "note": ""
+    },
+    {
+     "name": "피닉스",
+     "set4": [
+      "자유의 블루스"
+     ],
+     "set2": [
+      "파에톤의 노래"
+     ],
+     "targets": [
+      {
+       "stat": "AP",
+       "min": 380,
+       "max": null,
+       "raw": "이상마 380+"
+      },
+      {
+       "stat": "ATK",
+       "min": 2600,
+       "max": null,
+       "raw": "공격력 2600"
+      }
+     ],
+     "targetsRaw": "이상마 380+ 공격력 2600",
+     "crit": [],
+     "critRaw": "",
+     "note": "2돌 이상 시 5번 주옵\n관통률 추천\n보스 방어력 기준으로 바꾸기"
     },
     {
      "name": "엘렌",

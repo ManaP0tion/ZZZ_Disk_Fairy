@@ -1,6 +1,6 @@
 .DS_Store
 # 원본 시트(타인 저작물, 9.8MB)는 커밋하지 않음. tools/convert.py 로 benchmark.js 생성
-data/
+/data/
 extension.zip
 node_modules/
 __pycache__/
