@@ -23,7 +23,7 @@ jobs:
 
       - name: Download sheet and convert
         run: |
-          curl -fsSL -o data/sheet.xlsx "https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/export?format=xlsx"
+          curl -fsSL --create-dirs -o data/sheet.xlsx "https://docs.google.com/spreadsheets/d/1C3ZpKCTQJXFwUBgZKZRdLOvGqDGlVijb/export?format=xlsx"
           python tools/convert.py data/sheet.xlsx extension/data/benchmark.js
 
       # xlsx는 내려받을 때마다 바이트가 달라지므로 benchmark.js 변화로만 판단한다
