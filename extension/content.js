@@ -197,6 +197,10 @@
   .goalbox { border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
   .goalbox.ok { background: var(--pass-bg); }
   .goalbox.no { background: var(--fail-bg); }
+  .goalbox.skip { background: var(--chip); color: var(--ink-48); }
+  .goalbox .sk { display: flex; align-items: center; gap: 6px; }
+  .goalbox .sk img { width: 24px; height: 24px; border-radius: 50%; }
+  .goalbox.skip .sk img { opacity: .5; }
   .goalbox .k { display: flex; justify-content: space-between; gap: 6px; font: 600 12px/1.3 var(--text); color: var(--ink-80); }
   .goalbox .st { white-space: nowrap; }
   .goalbox.ok .st { color: var(--pass); }
@@ -299,6 +303,31 @@
     return `<section><h3>W-엔진</h3><div class="card">${cur}<div class="row setrow"><span class="pc">권장</span><div class="chips">${recs}</div></div></div>${e.note ? `<p class="fine" style="margin-top:8px">${esc(e.note)}</p>` : ""}${from}</section>`;
   }
 
+  // 스킬 종류별 아이콘: 전적 페이지가 쓰는 컬러 아이콘 (번들의 ZzzGameSkill*3). 궁극기 칸은 콤보 스킬 아이콘
+  const SKILL_ICON = {
+    "일반 공격": "https://act.hoyoverse.com/gt-ui/assets/icons/1f66bafcc1f069c2.png",
+    "회피": "https://act.hoyoverse.com/gt-ui/assets/icons/b15382e2428392f2.png",
+    "지원": "https://act.hoyoverse.com/gt-ui/assets/icons/38b9cdcdee285da4.png",
+    "특수 스킬": "https://act.hoyoverse.com/gt-ui/assets/icons/11ee8bd83f94a1eb.png",
+    "궁극기": "https://act.hoyoverse.com/gt-ui/assets/icons/25a4b80fcfd80526.png",
+  };
+
+  function skillSection(res) {
+    const s = res.skills;
+    if (!s) return "";
+    const boxes = s.rows.map((r) => {
+      const st = r.skip ? "투자 불필요" : r.cur == null ? "정보 없음" : r.ok ? "달성 ✓" : `−${r.want - r.cur}`;
+      return `<div class="goalbox ${r.skip ? "skip" : r.ok ? "ok" : "no"}"><span class="k"><span class="sk"><img src="${esc(SKILL_ICON[r.label])}" alt="" loading="lazy" referrerpolicy="no-referrer">${esc(r.label)}</span><span class="st">${esc(st)}</span></span>` +
+        `<span class="v">${esc(r.cur ?? "-")}<small>/ ${esc(r.wantText)}</small></span></div>`;
+    }).join("");
+    const next = s.next ? `다음 단계: ${s.next.map((x) => `${x.label} ${x.from}→${x.to}`).join(", ")}` : "권장 스킬 레벨을 모두 달성했습니다.";
+    const sel = res.tiers[res.selected];
+    const from = s.from && s.from !== sel.label ? ` ${sel.label} 탭에는 스킬 기준이 없어서, ${s.from} 기준으로 표시합니다.` : "";
+    const bonus = s.bonus ? ` 돌파 보너스 +${s.bonus}는 빼고 계산합니다.` : "";
+    return `<section><h3>스킬 레벨</h3><div class="goals">${boxes}</div>` +
+      `<p class="fine" style="margin-top:8px">${esc(next)}<br>육성 순서: 올스킬 7 → 중요한 스킬 9 → 권장 레벨.${esc(bonus + from)}</p></section>`;
+  }
+
   const TAG = { high: "필수", mid: "권장", low: "참고", info: "정보" };
 
   function discRow(d) {
@@ -345,6 +374,7 @@
           ${goalBoxes(res)}
           <section><h3>조언</h3><div class="card">${adviceHtml}</div></section>
           ${engineSection(res)}
+          ${skillSection(res)}
           ${setSection(res)}
           <section><h3>장착 디스크</h3><div class="discs">${res.discs.map(discRow).join("")}</div>
             <p class="fine" style="margin-top:8px">오른쪽 숫자는 유효한 부옵이 강화된 횟수이며, 가중치를 반영해서 계산합니다. 배경색이 있는 부옵이 유효 옵션이고, +n은 그 부옵이 강화된 횟수입니다.</p>${borrowed}</section>

@@ -7,9 +7,9 @@ import openpyxl
 
 TIERS = {
     # 탭 이름: (등급 키, 표시명, 컬럼 매핑(1-based))
-    "응애": ("basic", "응애", dict(spec=3, wengine=5, set4=6, set2=7, m4=8, m5=9, m6=10, subs=11,
+    "응애": ("basic", "응애", dict(spec=3, skills=4, wengine=5, set4=6, set2=7, m4=8, m5=9, m6=10, subs=11,
                                   targets=[12, 13], crit=14, note=15)),
-    "세팅": ("good", "이잘키", dict(spec=3, wengine=6, set4=7, set2=8, m4=9, m5=10, m6=11, subs=12,
+    "세팅": ("good", "이잘키", dict(spec=3, skills=4, wengine=6, set4=7, set2=8, m4=9, m5=10, m6=11, subs=12,
                                   targets=[14], crit=15, note=16)),
     "악귀": ("max", "악귀", dict(set4=2, set2=3, targets=[4], crit=5, note=6)),
 }
@@ -146,6 +146,11 @@ def parse_tab(ws, cols):
         e = {"name": name}
         if "spec" in cols:
             e["spec"] = cell(ws, r, cols["spec"])
+        if "skills" in cols:
+            # "12,1,12,12,12" (평,회,지,특,궁). "9+"는 9로 평가하고 표시는 원문을 쓴다
+            raw = cell(ws, r, cols["skills"])
+            if re.fullmatch(r"\d+\+?(,\d+\+?){4}", raw):
+                e["skills"], e["skillsRaw"] = [int(t.rstrip("+")) for t in raw.split(",")], raw
         if "wengine" in cols:
             e["wengine"], e["wengineNote"] = parse_engines(cell(ws, r, cols["wengine"]))
         # 괄호 메모("(w/ 다이아린)")를 먼저 지운 뒤 나눈다. 시트 오타는 SET_FIX로 교정.

@@ -224,6 +224,33 @@
     return { pass: checks.every((x) => x.gap <= 0), checks, conds };
   }
 
+  // 시트 순서(평,회,지,특,궁)별 API skill_type. 5(코어)는 쓰지 않는다.
+  const SKILL_SLOTS = [[0, "일반 공격"], [2, "회피"], [6, "지원"], [1, "특수 스킬"], [3, "궁극기"]];
+
+  // 시트는 3·5돌파 보너스(+2씩)를 뺀 레벨이고, API 레벨은 보너스가 포함되어 있다.
+  // 육성 순서는 시트 주석대로: 올스킬 7 (목표 1 제외) → 중요한 스킬 9 → 목표 레벨. 처음 막힌 단계만 안내한다.
+  function evalSkills(avatar, ref) {
+    const bonus = avatar.rank >= 5 ? 4 : avatar.rank >= 3 ? 2 : 0;
+    const raw = ref.skillsRaw.split(",");
+    const rows = SKILL_SLOTS.map(([type, label], i) => {
+      const s = avatar.skills.find((x) => x.skill_type === type);
+      const cur = s ? Math.max(1, s.level - bonus) : null;
+      const want = ref.skills[i];
+      return { label, cur, want, wantText: raw[i], skip: want <= 1, ok: cur != null && cur >= want };
+    });
+    const live = rows.filter((r) => !r.skip && r.cur != null);
+    let next = null;
+    for (const to of [7, 9]) {
+      const slots = live.filter((r) => r.want >= to && r.cur < to);
+      if (slots.length) { next = slots.map((r) => ({ label: r.label, from: r.cur, to })); break; }
+    }
+    if (!next) {
+      const slots = live.filter((r) => !r.ok);
+      if (slots.length) next = slots.map((r) => ({ label: r.label, from: r.cur, to: r.want }));
+    }
+    return { rows, next, done: live.every((r) => r.ok), bonus };
+  }
+
   function evaluate(avatar, bench, sel, pick) {
     sel = sel || "good";
     const T = bench.tiers;
@@ -298,6 +325,14 @@
       else if (idx < 0) advice.push({ level: "mid", text: `W-엔진 비권장 / 현재 ${weaponName} · 권장 ${recs.map((r) => r.name).join(", ")}` });
     }
 
+    // 3-1) 스킬 레벨: 시트 순서(평,회,지,특,궁)와 API skill_type 매핑. 악귀 탭엔 칸이 없어서 빌려온다.
+    const skillRef = [entries[sel], entries.good, entries.basic].find((e) => e && e.skills) || null;
+    const skills = skillRef && avatar.skills ? evalSkills(avatar, skillRef) : null;
+    if (skills) {
+      skills.from = tierLabelOf(skillRef);
+      if (skills.next) advice.push({ level: "low", text: `스킬 육성 / ` + skills.next.map((s) => `${s.label} ${s.from}→${s.to}`).join(", ") });
+    }
+
     // 4) 낮은 점수 디스크
     const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).sort((a, b) => a.eff - b.eff);
     weak.forEach((d, i) =>
@@ -326,7 +361,7 @@
     const order = { high: 0, mid: 1, low: 2, info: 3 };
     advice.sort((a, b) => order[a.level] - order[b.level]);
     return { name: avatar.name_mi18n, id: avatar.id, matched: !!ref, ref, selected: sel,
-      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, discs, stats, setInfo, tiers, advice, weights };
+      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, skills, discs, stats, setInfo, tiers, advice, weights };
   }
 
   const api = { evaluate, checkTier, statKey, setMatches, label };
