@@ -59,3 +59,24 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.equal(r(78.5, 130).checks[0].gap, 1.5);
   console.log("치명타 허용 오차 테스트 통과");
 }
+{ // 스킬 레벨: 실제 응답(2026-10-19)의 skills/rank. 순서는 skill_type 0,1,2,3,5,6
+  const sk = (lv) => [0, 1, 2, 3, 5, 6].map((t, i) => ({ skill_type: t, level: lv[i] }));
+  const ev = (name, rank, lv, sel = "good") => E.evaluate({ name_mi18n: name, full_name_mi18n: name, rank, skills: sk(lv), equip: [], properties: [] }, B, sel).skills;
+  // 레미엘 0돌, 목표 12,1,12,12,12: 7·9단계는 통과, 회피는 목표 1이라 제외
+  const rem = ev("레미엘", 0, [11, 11, 9, 10, 7, 10]);
+  assert.deepEqual(rem.rows.map((r) => r.cur), [11, 9, 10, 11, 10]);
+  assert.ok(rem.rows[1].skip);
+  assert.deepEqual(rem.next.map((x) => `${x.label} ${x.from}→${x.to}`), ["일반 공격 11→12", "지원 10→12", "특수 스킬 11→12", "궁극기 10→12"]);
+  // 리나 3돌·레벨 1: API 레벨 3은 보너스 +2가 포함된 값이라 1로 본다. 목표 1,1,1,9,9 → 먼저 7까지
+  const rina = ev("리나", 3, [3, 3, 3, 3, 1, 3]);
+  assert.equal(rina.bonus, 2);
+  assert.deepEqual(rina.next, [{ label: "특수 스킬", from: 1, to: 7 }, { label: "궁극기", from: 1, to: 7 }]);
+  // 「시드」 0돌, 목표 12,7,7,11,12 → 모두 달성
+  const seed = ev("「시드」", 0, [12, 12, 9, 12, 7, 9]);
+  assert.ok(seed.done && !seed.next);
+  // 악귀 탭에는 스킬 칸이 없어서 이잘키 기준을 빌린다
+  assert.equal(ev("레미엘", 0, [11, 11, 9, 10, 7, 10], "max").from, "이잘키");
+  // 7단계가 막히면 9단계는 안내하지 않는다
+  assert.deepEqual(ev("레미엘", 0, [6, 11, 9, 10, 7, 10]).next, [{ label: "일반 공격", from: 6, to: 7 }]);
+  console.log("스킬 레벨 테스트 통과");
+}
