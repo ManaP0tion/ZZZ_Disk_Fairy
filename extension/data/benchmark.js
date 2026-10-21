@@ -1,6 +1,6 @@
 // 자동 생성: tools/convert.py
 window.ZZZ_BENCHMARK = {
- "version": "젠레스 존 제로 이잘키 세팅 3.2V",
+ "version": "젠레스 존 제로 이잘키 세팅 3.3V",
  "tiers": {
   "basic": {
    "label": "응애",
@@ -2604,7 +2604,7 @@ window.ZZZ_BENCHMARK = {
   "good": {
    "label": "이잘키",
    "sheet": "세팅",
-   "title": "젠레스 존 제로 이잘키 세팅 3.2V",
+   "title": "젠레스 존 제로 이잘키 세팅 3.3V",
    "agents": [
     {
      "name": "레미엘",
@@ -2740,10 +2740,14 @@ window.ZZZ_BENCHMARK = {
       {
        "CR": 76.0,
        "CD": null,
-       "raw": "전엔 기준 76"
+       "raw": "치확 76",
+       "cond": {
+        "type": "note",
+        "text": "전엔 기준"
+       }
       }
      ],
-     "critRaw": "전엔 기준 76 = 만치확",
+     "critRaw": "치확 76 (전엔 기준)",
      "note": "디스크는 고요,산림,스윙 4셋 중 택1\n스윙+달빛+딱따 222 셋으로도 무방함"
     },
     {
@@ -3948,10 +3952,10 @@ window.ZZZ_BENCHMARK = {
       12,
       7,
       9,
-      12,
+      11,
       12
      ],
-     "skillsRaw": "12,7+,9+,12,12",
+     "skillsRaw": "12,7,9,11,12",
      "wengine": [
       "열반의 첫 깃[전엔]",
       "껍데기 속 영혼[아리아]",
@@ -3993,18 +3997,18 @@ window.ZZZ_BENCHMARK = {
      "targets": [
       {
        "stat": "ATK",
-       "min": 2500,
+       "min": 2400,
        "max": null,
-       "raw": "공 2500"
+       "raw": "공 2400"
       },
       {
        "stat": "AP",
-       "min": 330,
+       "min": 350,
        "max": null,
-       "raw": "이상마 330"
+       "raw": "이상마 350"
       }
      ],
-     "targetsRaw": "공 2500 이상마 330 이상 장악력 255",
+     "targetsRaw": "공 2400 이상마 350",
      "crit": [],
      "critRaw": "",
      "note": "전엔 사용시 확정 치명타 발생\n치명타 피해는 고정값"
@@ -5062,7 +5066,7 @@ window.ZZZ_BENCHMARK = {
       }
      ],
      "critRaw": "33 / 200 (4번 주옵 치피) 33 / 150 (4번 주옵 공퍼)",
-     "note": "*3.1버전 정식 출시 이후\n내용 달라질 수 있음"
+     "note": "전엔 기준\n4번 치명타 피해/공격력 비슷한 효율"
     },
     {
      "name": "프로미아",
@@ -7588,12 +7592,12 @@ window.ZZZ_BENCHMARK = {
       },
       {
        "stat": "AP",
-       "min": 350,
+       "min": 370,
        "max": null,
-       "raw": "이상마 350+"
+       "raw": "이상마 370+"
       }
      ],
-     "targetsRaw": "공 3100 이상마 350+",
+     "targetsRaw": "공 3100 이상마 370+",
      "crit": [],
      "critRaw": "",
      "note": "레미엘과 사용 시\n5번 공퍼 비추천"
@@ -7809,22 +7813,22 @@ window.ZZZ_BENCHMARK = {
      ],
      "targets": [
       {
-       "stat": "AP",
-       "min": 380,
-       "max": null,
-       "raw": "이상마 380+"
-      },
-      {
        "stat": "ATK",
        "min": 2600,
        "max": null,
-       "raw": "공격력 2600"
+       "raw": "공 2600"
+      },
+      {
+       "stat": "AP",
+       "min": 400,
+       "max": null,
+       "raw": "이상마 400+"
       }
      ],
-     "targetsRaw": "이상마 380+ 공격력 2600",
+     "targetsRaw": "공 2600 이상마 400+",
      "crit": [],
      "critRaw": "",
-     "note": "2돌 이상 시 5번 주옵\n관통률 추천\n보스 방어력 기준으로 바꾸기"
+     "note": "2돌 이상 시 5번 주옵\n관통률 추천\n보스 방어력 기준으로 설정"
     },
     {
      "name": "엘렌",
@@ -8336,7 +8340,7 @@ window.ZZZ_BENCHMARK = {
       }
      ],
      "critRaw": "72 / 130",
-     "note": "*4, 6번 시네마 공개 시\n변경될 수 있음"
+     "note": "*6번 시네마 공개 시\n변경될 수 있음"
     },
     {
      "name": "야나기",
@@ -8566,6 +8570,33 @@ window.ZZZ_BENCHMARK = {
      ],
      "critRaw": "57 / 130",
      "note": "만치확(마을 기준 57)에\n최대한 가깝게 세팅"
+    },
+    {
+     "name": "시시아",
+     "set4": [
+      "가시 돋친 장미"
+     ],
+     "set2": [
+      "복어 일렉트로"
+     ],
+     "targets": [
+      {
+       "stat": "DEF",
+       "min": 2650,
+       "max": null,
+       "raw": "방 2650"
+      }
+     ],
+     "targetsRaw": "방 2650",
+     "crit": [
+      {
+       "CR": 128.0,
+       "CD": null,
+       "raw": "치확 128"
+      }
+     ],
+     "critRaw": "치확 128",
+     "note": "치확 15점, 방어력 15점, \n치피 10점 기준 세팅"
     },
     {
      "name": "벨리나",
