@@ -24,6 +24,20 @@ for (const k of ["basic", "good", "max"]) console.log(k, r.tiers[k].label, JSON.
 for (const d of r.discs) console.log(d.slot, d.set, d.main.label, d.main.value, "mainOk=" + d.mainOk, "eff=" + d.eff, d.grade.text);
 console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] " + a.text));
 }
+{ // 디스크 카드 안내: 주옵이 틀린 6번은 우선 교체, 주옵과 같은 스탯은 챙길 부옵에서 뺀다
+  const r = E.evaluate(fx.data.avatar_list[0], B, "good");
+  const d = (n) => r.discs.find((x) => x.slot === n).tip;
+  assert.equal(d(6).level, "high");
+  assert.deepEqual(d(6).want, ["이상 마스터리", "공격력%"]);
+  assert.deepEqual(d(4).want, ["공격력%"]);
+  assert.equal(d(4).level, "keep");
+  assert.deepEqual(d(1).lack, ["공격력%"]);
+  assert.deepEqual(d(1).mains, []); // 1~3번은 주옵 고정이라 추천 주옵이 없다
+  assert.ok(d(6).mains.length && d(6).mains.every((m) => !m.on)); // 주옵이 틀리면 추천 주옵 중 장착한 것이 없다
+  assert.ok(d(4).mains.some((m) => m.on));
+  assert.ok(r.advice.some((a) => a.text.startsWith("디스크 교체 / 6번 주옵 부적합 · 1, 3번 점수 낮음")));
+  console.log("디스크 안내 테스트 통과");
+}
 // W-엔진 판정
 {
   const av = { ...fx.data.avatar_list[0], weapon: { name: "영롱한 금빛 마음", star: 1 } };
