@@ -99,7 +99,8 @@
   .panel.page { position: static; width: auto; height: 100vh; max-height: none; border: 0; border-radius: 0;
     display: grid; grid-template-columns: 400px minmax(0, 1fr); }
   .page .scroll { height: 100vh; }
-  .page header, .page .body { max-width: 800px; margin: 0 auto; box-sizing: border-box; }
+  /* 목록(400px)을 빼고 남은 칸이 아니라 화면 전체의 중앙에 둔다. 화면이 좁으면 가능한 만큼만 오른쪽으로 민다 */
+  .page header, .page .body { max-width: 800px; margin: 0 auto 0 max(0px, calc(50vw - 800px)); box-sizing: border-box; }
   nav { height: 100vh; overflow: auto; border-right: 1px solid var(--hairline); background: var(--card); padding: 16px 10px; box-sizing: border-box; }
   /* 게임 에이전트 목록처럼 한 줄에 4명: 초상화 + 레벨, 아래에 이름과 목표 달성 */
   .ags { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 8px; }
