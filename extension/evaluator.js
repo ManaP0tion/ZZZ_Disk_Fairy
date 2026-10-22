@@ -265,7 +265,7 @@
     else if (d.grade.key === "ok") { level = "keep"; text = "쓸 만한 디스크입니다. 점수가 더 높은 디스크가 나오면 바꾸세요."; }
     else if (d.grade.key === "meh") { level = "mid"; text = `유효 강화가 ${d.eff}회뿐입니다. 여유가 있으면 바꾸세요.`; }
     else { level = "mid"; text = `유효 강화가 ${d.eff}회로 낮습니다. 우선 교체할 디스크입니다.`; }
-    if (level !== "keep" && junk >= 2) text += ` 쓸모없는 부옵이 ${junk}개 붙어 있습니다.`;
+    if (level !== "keep" && junk >= 2) text += ` 유효하지 않은 부옵이 ${junk}개 붙어 있습니다.`;
     // 추천 주옵: 4~6번만 (1~3번은 주옵이 고정이라 고를 게 없다). 지금 주옵이면 on
     const mains = (d.mainAllowed || []).map((m) => ({ label: m, on: statKey(m, true) === mk }));
     return { level, text, mains, want: want.map(label), extra: extra.map(label), lack: lack.map(label) };
