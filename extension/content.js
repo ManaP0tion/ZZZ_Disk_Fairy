@@ -1,6 +1,9 @@
 // 격리된 content script: inject.js가 넘긴 응답을 평가해서 패널로 그린다.
 // 디자인: docs/DESIGN.md (Apple 계열 — Parchment 서피스, 단일 Action Blue, pill 칩, 그림자 없음)
 (() => {
+  // 리포트 탭(report.html)에서 불러오면 패널 대신 전체 에이전트 리포트로 동작한다
+  const REPORT = location.protocol === "chrome-extension:";
+  let roster = []; // 리포트 모드: 전적 탭에서 받아 온 전체 에이전트
   let host, shadow, lastAvatar, pick = null; // pick: 조건이 맞지 않을 때 사용자가 고른 목표 조건 (에이전트가 바뀌면 초기화)
   const KEY = "zzzDiscAdvisor.tier";
   let tier = "good";
@@ -92,6 +95,35 @@
       --pass: #64d2ff; --pass-bg: rgba(100, 210, 255, 0.14); --good: #30d158; --zzz: #f68b2e; --fail: #ff6961; --fail-bg: rgba(255, 105, 97, 0.14);
       color-scheme: dark;
     }
+  /* 리포트 모드: 왼쪽 에이전트 목록 + 오른쪽 패널 화면 */
+  .panel.page { position: static; width: auto; height: 100vh; max-height: none; border: 0; border-radius: 0;
+    display: grid; grid-template-columns: 400px minmax(0, 1fr); }
+  .page .scroll { height: 100vh; }
+  .page header, .page .body { max-width: 800px; margin: 0 auto; box-sizing: border-box; }
+  nav { height: 100vh; overflow: auto; border-right: 1px solid var(--hairline); background: var(--card); padding: 16px 10px; box-sizing: border-box; }
+  /* 게임 에이전트 목록처럼 한 줄에 4명: 초상화 + 레벨, 아래에 이름과 목표 달성 */
+  .ags { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 8px; }
+  .ag { display: grid; gap: 2px; justify-items: center; text-align: center; color: var(--ink); text-decoration: none; border-radius: 12px; padding: 4px; }
+  .ag:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 0; }
+  .ag .pic { position: relative; width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--valid-bg);
+    border: 2px solid var(--hairline); box-sizing: border-box; }
+  .ag:hover .pic { border-color: var(--ink-48); }
+  .ag.on .pic { border-color: var(--primary-focus); }
+  .ag img, .ag .ph { width: 100%; height: 100%; object-fit: cover; display: grid; place-items: center; font: 600 18px/1 var(--text); color: var(--ink-60); }
+  .ag .lv { position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 0; background: rgba(0, 0, 0, 0.6); color: #fff; font: 400 11px/1.3 var(--text); }
+  /* 등급 배지: 게임처럼 S는 주황, A는 보라 */
+  .ag .rk { position: absolute; top: 3px; left: 3px; min-width: 18px; padding: 1px 4px; box-sizing: border-box; border-radius: 9999px;
+    background: var(--zzz); color: #fff; font: 600 11px/16px var(--text); }
+  .ag .rk.A { background: #a35cf0; }
+  .ag b { width: 100%; font: 600 12px/1.3 var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ag .gl { font: 400 11px/1.2 var(--text); color: var(--ink-60); white-space: nowrap; }
+  .ag .gl.no { color: var(--fail); }
+  .ag .gl.ok { color: var(--pass); }
+  @media (max-width: 640px) {
+    .panel.page { display: block; height: auto; }
+    .page nav { height: auto; max-height: 40vh; border-right: 0; border-bottom: 1px solid var(--hairline); }
+    .page .scroll { height: auto; }
+  }
   .scroll { overflow: auto; overscroll-behavior: contain; min-height: 0; }
   .grip { position: absolute; left: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 2; touch-action: none; }
   .grip:hover, .grip.on { background: linear-gradient(to right, var(--primary) 2px, transparent 2px); }
@@ -105,7 +137,10 @@
   h2 { margin: 0; font: 600 28px/1.1 var(--display); letter-spacing: -0.28px; }
   .icon { all: unset; box-sizing: border-box; width: 32px; height: 32px; border-radius: 9999px; background: var(--chip);
     display: grid; place-items: center; cursor: pointer; color: var(--ink); font: 400 14px/1 var(--text); }
-  .icon:active, .seg:active, summary:active { transform: scale(0.95); }
+  .hbtn { flex: none; padding: 7px 12px; border-radius: 9999px; background: var(--chip); color: var(--ink); text-decoration: none;
+    font: 600 12px/1.2 var(--text); white-space: nowrap; }
+  .hbtn:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
+  .icon:active, .seg:active, .hbtn:active, summary:active { transform: scale(0.95); }
   .icon:focus-visible, .seg:focus-visible, summary:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
   .body { padding: 0 20px 20px; display: grid; gap: 24px; }
   h3 { margin: 0 0 8px; font: 600 14px/1.29 var(--text); letter-spacing: -0.224px; color: var(--ink); }
@@ -169,6 +204,17 @@
   .sub .val { white-space: nowrap; font-variant-numeric: tabular-nums; }
   .sub .r { font-size: 11px; margin-left: 3px; color: var(--ink-60); font-weight: 400; }
   .sub.v { background: var(--valid-bg); border-color: transparent; color: var(--ink); font-weight: 600; }
+
+  .tip { grid-column: 1 / 4; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider); display: grid; gap: 4px; }
+  .tip p { margin: 0; font: 400 13px/1.45 var(--text); letter-spacing: -0.2px; color: var(--ink-80); }
+  .tip.high p:first-child { color: var(--fail); font-weight: 600; }
+  .tip.mid p:first-child { color: var(--ink); font-weight: 600; }
+  .opts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+  .opts b { font: 600 12px/1.3 var(--text); color: var(--ink-60); min-width: 56px; }
+  .opt { padding: 3px 9px; border-radius: 9999px; font: 600 12px/1.3 var(--text); letter-spacing: -0.12px; white-space: nowrap; }
+  .opt.has { background: var(--pass-bg); color: var(--pass); }
+  .opt.lack { border: 1px dashed var(--ink-48); color: var(--ink-80); }
+  .opt.extra { background: var(--chip); color: var(--ink-60); font-weight: 400; }
 
   .setrow { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; }
   .pc { font: 600 13px/32px var(--text); color: var(--ink-60); }
@@ -330,10 +376,23 @@
 
   const TAG = { high: "필수", mid: "권장", low: "참고", info: "정보" };
 
+  // 디스크 카드 아래 안내: 판정 문구 + 추천 주옵·부옵 (지금 붙어 있으면 ✓ 칩, 노려야 하면 점선 칩, 대안·보조는 회색)
+  function tipHtml(t) {
+    if (!t) return "";
+    const short = (l) => SHORT[l] || l; // 공격력%와 깡 공격력을 구분해야 하므로 %는 남긴다
+    const chip = (l, cls) => `<span class="opt ${cls}">${esc(short(l))}${cls === "has" ? " ✓" : ""}</span>`;
+    const line = (name, items) => items.length ? `<div class="opts"><b>${name}</b>${items.join("")}</div>` : "";
+    const mainOk = t.mains.some((m) => m.on);
+    return `<div class="tip ${t.level}"><p>${esc(t.text)}</p>` +
+      line("추천 주옵", t.mains.map((m) => chip(m.label, m.on ? "has" : mainOk ? "extra" : "lack"))) +
+      line("추천 부옵", t.want.map((l) => chip(l, t.lack.includes(l) ? "lack" : "has"))) +
+      line("보조", t.extra.map((l) => chip(l, "extra"))) + `</div>`;
+  }
+
   function discRow(d) {
     const main = d.main ? `<span class="lbl">주옵</span>${esc(d.main.label)} ${esc(d.main.value)}` : "주옵 없음";
     let mainHtml = `<div class="main">${main}</div>`;
-    if (d.mainOk === false) mainHtml = `<div class="main bad">${main}<span class="rec">권장 ${esc(d.mainAllowed.join(" / "))}</span></div>`;
+    if (d.mainOk === false) mainHtml = `<div class="main bad">${main}</div>`; // 권장 주옵은 아래 추천 주옵 칩에 있다
     const subs = d.subs
       .map((s) => `<div class="sub ${s.weight > 0 ? "v" : ""}"><span class="n">${esc(short(s.label))}</span>` +
         `<span class="val">${esc(s.value)}${s.rolls > 1 ? `<span class="r">+${s.rolls - 1}</span>` : ""}</span></div>`)
@@ -342,7 +401,22 @@
     const meter = Array.from({ length: 8 }, (_, i) => `<i class="${i < lit ? "on" : ""}"></i>`).join("");
     return `<div class="disc${d.grade.key === "bad" ? " bad" : ""}"><div class="slot"><span>${d.slot}</span>${d.icon ? `<img src="${esc(d.icon)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}</div><div class="set" title="${esc(d.name)}">${esc(d.set || d.name)}</div>
       <div class="score ${d.grade.key}"><b>${d.eff}</b><span>${esc(d.grade.text)}</span><div class="meter" aria-hidden="true">${meter}</div></div>
-      ${mainHtml}<div class="subs">${subs}</div></div>`;
+      ${mainHtml}<div class="subs">${subs}</div>${tipHtml(d.tip)}</div>`;
+  }
+
+  // 리포트 모드 왼쪽 목록: 선택한 등급 기준 달성 여부와 교체할 디스크 수
+  function navHtml() {
+    const items = roster.map((a) => {
+      const r = window.ZZZEval.evaluate(a, window.ZZZ_BENCHMARK, tier);
+      const t = r.tiers[r.selected].result;
+      const goal = !t || t.pass === null ? "기준 없음" : t.pass ? "목표 달성" : `${t.checks.filter((c) => c.gap > 0).length}개 부족`;
+      const swap = r.discs.filter((d) => d.tip.level === "high" || d.grade.key === "bad").length;
+      const pic = a.role_square_url ? `<img src="${esc(a.role_square_url)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="ph" aria-hidden="true">${esc(String(a.name_mi18n).slice(0, 1))}</span>`;
+      return `<a class="ag${a === lastAvatar ? " on" : ""}" href="#${esc(a.id)}" title="${esc(`${a.name_mi18n} · ${goal}${swap ? ` · 디스크 ${swap}개 교체` : ""}`)}"${a === lastAvatar ? ' aria-current="page"' : ""}>` +
+        `<span class="pic">${pic}${a.level ? `<span class="lv">Lv. ${esc(a.level)}</span>` : ""}${a.rarity ? `<span class="rk ${esc(a.rarity)}" aria-label="${esc(a.rarity)}급">${esc(a.rarity)}</span>` : ""}</span>` +
+        `<b>${esc(a.name_mi18n)}</b><span class="gl${t && t.pass === false ? " no" : t && t.pass ? " ok" : ""}">${esc(goal)}</span></a>`;
+    }).join("");
+    return `<nav aria-label="에이전트 목록"><div class="ags">${items}</div></nav>`;
   }
 
   function render(res) {
@@ -357,15 +431,17 @@
     const sel = res.tiers[res.selected];
     const borrowed = res.statFrom && res.statFrom !== sel.label ? `<p class="fine">시트의 ${esc(sel.label)} 탭에는 주옵·부옵 기준이 없어서, ${esc(res.statFrom)} 기준으로 판정합니다.</p>` : "";
 
+    const navTop = REPORT && shadow.querySelector("nav") ? shadow.querySelector("nav").scrollTop : 0;
     shadow.innerHTML = `<style>${CSS}</style>
-      <div class="panel${minimized ? " min" : ""}"${theme ? ` data-theme="${theme}"` : ""} role="dialog" aria-label="디스크 평가" style="--w:${clampWidth(width)}px">
-        <div class="grip" title="드래그해서 폭 조절" aria-hidden="true"></div>
+      <div class="panel${minimized ? " min" : ""}${REPORT ? " page" : ""}"${theme ? ` data-theme="${theme}"` : ""} role="dialog" aria-label="디스크 평가" style="--w:${clampWidth(width)}px">
+        ${REPORT ? navHtml() : `<div class="grip" title="드래그해서 폭 조절" aria-hidden="true"></div>`}
         <div class="scroll">
         <header>
           <div class="title"><span class="eyebrow">디스크 평가</span><h2>${esc(res.name)}</h2></div>
+          ${REPORT ? "" : `<a class="hbtn" href="${esc(chrome.runtime.getURL("report.html"))}#${esc(lastAvatar.id)}" target="_blank" rel="noopener" title="보유한 에이전트 전체를 새 탭에서 분석합니다">전체 분석</a>`}
           <button class="icon" id="theme" aria-label="${isDark() ? "라이트 모드로 전환" : "다크 모드로 전환"}" title="${isDark() ? "라이트 모드" : "다크 모드"}">${isDark() ? "☀" : "☾"}</button>
-          <button class="icon" id="min" aria-label="접기">${minimized ? "+" : "−"}</button>
-          <button class="icon" id="close" aria-label="닫기">✕</button>
+          ${REPORT ? "" : `<button class="icon" id="min" aria-label="접기">${minimized ? "+" : "−"}</button>
+          <button class="icon" id="close" aria-label="닫기">✕</button>`}
         </header>
         <div class="body">
           ${res.matched ? "" : `<p class="fine">시트에서 이 에이전트를 찾지 못했습니다. 전적 페이지에 표시된 이름: “${esc(lastAvatar.name_mi18n)}” / “${esc(lastAvatar.full_name_mi18n)}” (id ${esc(lastAvatar.id)})</p>`}
@@ -393,7 +469,9 @@
       e.currentTarget.setAttribute("aria-label", isDark() ? "라이트 모드로 전환" : "다크 모드로 전환");
       e.currentTarget.title = isDark() ? "라이트 모드" : "다크 모드";
     };
+    if (REPORT) shadow.querySelector("nav").scrollTop = navTop;
     const grip = shadow.querySelector(".grip");
+    if (grip) {
     grip.onpointerdown = (e) => {
       const panel = shadow.querySelector(".panel");
       const x0 = e.clientX, w0 = panel.offsetWidth;
@@ -413,6 +491,7 @@
       p.classList.toggle("min");
       e.currentTarget.textContent = p.classList.contains("min") ? "+" : "−";
     };
+    }
     shadow.querySelectorAll("[data-tier]").forEach((b) =>
       b.addEventListener("click", () => {
         tier = b.dataset.tier;
@@ -436,6 +515,80 @@
     if (document.body) draw();
     else document.addEventListener("DOMContentLoaded", draw, { once: true });
   }
+
+  if (REPORT) {
+    // 리포트 탭: 열려 있는 전적 탭에 연결해서 전체 에이전트를 받아 오고, #id로 에이전트별 화면을 나눈다
+    const status = document.getElementById("status");
+    const say = (html) => { status.innerHTML = html; };
+    const RECORD = "https://act.hoyolab.com/app/zzz-game-record/";
+    const retry = `<br><a href="${RECORD}" target="_blank" rel="noopener">전적 페이지</a>에서 로그인을 확인한 뒤 이 탭을 새로고침하세요.`;
+    const route = () => {
+      const a = roster.find((x) => String(x.id) === location.hash.slice(1)) || roster[0];
+      if (a && a !== lastAvatar) show(a);
+    };
+    window.addEventListener("hashchange", route);
+    // 전적 탭이 다 뜰 때까지 기다린다 (status는 tabs 권한 없이도 보인다)
+    const loaded = (id, fresh) => new Promise((resolve) => {
+      const check = (tabId, info) => { if (tabId === id && info.status === "complete") { chrome.tabs.onUpdated.removeListener(check); resolve(); } };
+      chrome.tabs.onUpdated.addListener(check);
+      if (!fresh) chrome.tabs.get(id).then((t) => { if (t.status === "complete") check(id, t); }); // 새로고침 직후엔 이전 페이지의 complete가 보일 수 있다
+    });
+    // 팝업이 넘긴 전적 탭(?tab=)을 쓰고, 없으면 찾는다. 그래도 없으면 뒤에서 열고,
+    // content script가 없는 탭(확장 설치·업데이트 전에 연 탭)이면 한 번 새로고침한다
+    (async () => {
+      const given = Number(new URLSearchParams(location.search).get("tab"));
+      let tab = given ? await chrome.tabs.get(given).catch(() => null) : null;
+      if (!tab) [tab] = await chrome.tabs.query({ url: RECORD + "*" });
+      if (!tab) {
+        say("HoYoLAB 전적 페이지를 여는 중입니다.");
+        tab = await chrome.tabs.create({ url: RECORD, active: false });
+      }
+      await loaded(tab.id);
+      connect(tab, false);
+    })();
+    function connect(tab, reloaded) {
+      say("전적 페이지에서 에이전트 목록을 기다리는 중입니다.");
+      let done = false, heard = false;
+      const port = chrome.tabs.connect(tab.id, { name: "zzzReport" });
+      port.onMessage.addListener((m) => {
+        heard = true;
+        if (m.progress) say(`전적 페이지에서 에이전트 정보를 불러오는 중입니다. (${m.progress.done}/${m.progress.total})`);
+        if (m.error) { done = true; say(esc(m.error)); port.disconnect(); }
+        if (m.all) {
+          done = true;
+          port.disconnect();
+          if (!m.all.length) return say("에이전트 정보를 하나도 받지 못했습니다." + retry);
+          roster = m.all;
+          roster.forEach(rememberIcons);
+          status.remove();
+          if (m.failed) console.warn(`[ZZZ 디스크 페어리] 에이전트 ${m.failed}명의 정보를 받지 못했습니다.`);
+          route();
+        }
+      });
+      port.onDisconnect.addListener(async () => {
+        if (done) return;
+        if (heard || reloaded) return say("전적 페이지와 연결이 끊겼습니다." + retry);
+        say("전적 페이지를 새로고침하는 중입니다.");
+        const wait = loaded(tab.id, true);
+        await chrome.tabs.reload(tab.id);
+        await wait;
+        connect(tab, true);
+      });
+    }
+    return;
+  }
+
+  // 리포트 탭이 연결하면 inject.js에 전체 수집을 시키고, 진행 상황과 결과를 그대로 넘긴다
+  chrome.runtime.onConnect.addListener((port) => {
+    if (port.name !== "zzzReport") return;
+    const relay = (ev) => {
+      const d = ev.source === window && ev.data && ev.data.__zzzDiscAdvisor ? ev.data : null;
+      if (d && (d.progress || d.all || d.error)) try { port.postMessage(d); } catch (e) {}
+    };
+    window.addEventListener("message", relay);
+    port.onDisconnect.addListener(() => window.removeEventListener("message", relay));
+    window.postMessage({ __zzzDiscAdvisor: true, cmd: "all" }, "*");
+  });
 
   // 페이지는 한 번 불러온 에이전트를 다시 요청하지 않는다 (A → B → A를 누르면 응답이 안 옴).
   // 그래서 받은 응답을 id별로 모아 두고, 클릭한 카드가 어느 에이전트인지 찾아서 다시 그린다.

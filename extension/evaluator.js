@@ -251,6 +251,26 @@
     return { rows, next, done: live.every((r) => r.ok), bonus };
   }
 
+  // 디스크 한 장에 대한 안내: 판정, 이 슬롯에서 챙길 부옵(주옵과 같은 스탯은 부옵으로 안 붙으므로 뺀다), 빠진 부옵
+  function discTip(d, weights) {
+    const mk = d.mainOk === false ? null : d.main && d.main.key; // 주옵이 틀리면 새 디스크 기준으로 안내
+    const byWeight = (min, max) => Object.keys(weights).filter((k) => k !== mk && weights[k] >= min && weights[k] < max).sort((a, b) => weights[b] - weights[a]);
+    const want = byWeight(1, Infinity), extra = byWeight(0.01, 1);
+    const has = new Set(d.subs.map((s) => s.key));
+    const lack = want.filter((k) => !has.has(k));
+    const junk = d.subs.filter((s) => !s.weight).length;
+    let level, text;
+    if (d.mainOk === false) { level = "high"; text = `주옵이 맞지 않아 먼저 교체해야 합니다. 새 디스크는 ${d.mainAllowed.join(" / ")} 주옵으로 고르세요.`; }
+    else if (d.grade.key === "great") { level = "keep"; text = "강화가 유효 부옵에 잘 들어갔습니다. 그대로 쓰세요."; }
+    else if (d.grade.key === "ok") { level = "keep"; text = "쓸 만한 디스크입니다. 점수가 더 높은 디스크가 나오면 바꾸세요."; }
+    else if (d.grade.key === "meh") { level = "mid"; text = `유효 강화가 ${d.eff}회뿐입니다. 여유가 있으면 바꾸세요.`; }
+    else { level = "mid"; text = `유효 강화가 ${d.eff}회로 낮습니다. 우선 교체할 디스크입니다.`; }
+    if (level !== "keep" && junk >= 2) text += ` 쓸모없는 부옵이 ${junk}개 붙어 있습니다.`;
+    // 추천 주옵: 4~6번만 (1~3번은 주옵이 고정이라 고를 게 없다). 지금 주옵이면 on
+    const mains = (d.mainAllowed || []).map((m) => ({ label: m, on: statKey(m, true) === mk }));
+    return { level, text, mains, want: want.map(label), extra: extra.map(label), lack: lack.map(label) };
+  }
+
   function evaluate(avatar, bench, sel, pick) {
     sel = sel || "good";
     const T = bench.tiers;
@@ -280,9 +300,8 @@
         const allowed = (statRef.mains[d.slot] || []).map((m) => statKey(m, true));
         d.mainAllowed = (statRef.mains[d.slot] || []);
         d.mainOk = allowed.length ? allowed.includes(d.main && d.main.key) : null;
-        if (d.mainOk === false)
-          advice.push({ level: "high", text: `${d.slot}번 주옵 부적합 / 현재 ${d.main.label} · 권장 ${d.mainAllowed.join(", ")}` });
       }
+      d.tip = discTip(d, weights);
     }
     const missing = [1, 2, 3, 4, 5, 6].filter((s) => !discs.some((d) => d.slot === s));
     if (missing.length) advice.unshift({ level: "high", text: `${missing.join(", ")}번 슬롯 비어 있음` });
@@ -333,11 +352,13 @@
       if (skills.next) advice.push({ level: "low", text: `스킬 육성 / ` + skills.next.map((s) => `${s.label} ${s.from}→${s.to}`).join(", ") });
     }
 
-    // 4) 낮은 점수 디스크
-    const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).sort((a, b) => a.eff - b.eff);
-    weak.forEach((d, i) =>
-      advice.push({ level: i === 0 ? "mid" : "low", text: `${d.slot}번 디스크 교체 고려 대상 / 유효 강화 ${d.eff}회 (전체 ${d.totalRolls}회)` })
-    );
+    // 4) 교체할 디스크: 자세한 안내는 디스크 카드(d.tip)에 있고, 조언에는 슬롯만 모아 둔다
+    const wrongMain = discs.filter((d) => d.mainOk === false).map((d) => d.slot);
+    const weak = discs.filter((d) => d.grade.key === "bad" && d.mainOk !== false).map((d) => d.slot);
+    if (wrongMain.length || weak.length)
+      advice.push({ level: wrongMain.length ? "high" : "mid", text: "디스크 교체 / " +
+        [wrongMain.length && `${wrongMain.join(", ")}번 주옵 부적합`, weak.length && `${weak.join(", ")}번 점수 낮음`].filter(Boolean).join(" · ") +
+        " · 디스크 카드에 추천 옵션을 적어 두었습니다" });
 
     // 5) 등급별 목표 스탯
     const tiers = {};

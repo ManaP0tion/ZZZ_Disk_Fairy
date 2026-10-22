@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ZZZ 디스크 페어리",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -13,6 +13,15 @@
     "default_title": "ZZZ 디스크 페어리"
   },
   "description": "HoYoLAB 전적 페이지에서 에이전트를 열면 장착한 디스크를 세팅 시트 기준으로 평가합니다.",
+  "host_permissions": [
+    "https://act.hoyolab.com/app/zzz-game-record/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["report.html"],
+      "matches": ["https://act.hoyolab.com/*"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": [
