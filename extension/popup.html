@@ -16,14 +16,12 @@
     display: flex; align-items: center; justify-content: center; gap: 8px; }
   button img { width: 30px; height: 30px; border-radius: 7px; margin: -6px 0; }
   button.sub { margin-top: 16px; background: transparent; color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
-  .hint { margin: 8px 0 0; font-size: 12px; }
   button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   button:active { transform: scale(0.97); }
 </style>
 <div class="top"><img src="icons/icon48.png" alt=""><h1>ZZZ 디스크 페어리 <span id="ver"></span></h1></div>
 <p>마스터, HoYoLAB 전적 페이지에서 에이전트를 선택해 주세요. 디스크 분석은 페어리가 맡겠습니다</p>
 <button id="report"><img src="icons/zzz.png" alt="">전체 에이전트 분석</button>
-<p class="hint">리포트 탭을 열고, 전적 페이지에서 보유한 에이전트를 모두 불러옵니다.</p>
 <button id="go" class="sub">전적 페이지에서 분석하기</button>
 <script src="popup.js"></script>
 </html>
