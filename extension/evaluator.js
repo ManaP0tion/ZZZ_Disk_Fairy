@@ -227,7 +227,8 @@
   // 시트 순서(평,회,지,특,궁)별 API skill_type. 5(코어)는 쓰지 않는다.
   const SKILL_SLOTS = [[0, "일반 공격"], [2, "회피"], [6, "지원"], [1, "특수 스킬"], [3, "궁극기"]];
 
-  // 시트는 3·5돌파 보너스(+2씩)를 뺀 레벨이고, API 레벨은 보너스가 포함되어 있다.
+  // 시트는 형상 시네마 3·5단계 보너스(+2씩)를 뺀 레벨이고, API 레벨(게임 표시)은 보너스가 포함되어 있다.
+  // 판정은 보너스를 뺀 레벨로 하고, 화면에 내보내는 숫자(cur, want, next)는 게임과 같게 보너스를 더한다.
   // 육성 순서는 시트 주석대로: 올스킬 7 (목표 1 제외) → 중요한 스킬 9 → 목표 레벨. 처음 막힌 단계만 안내한다.
   function evalSkills(avatar, ref) {
     const bonus = avatar.rank >= 5 ? 4 : avatar.rank >= 3 ? 2 : 0;
@@ -248,7 +249,15 @@
       const slots = live.filter((r) => !r.ok);
       if (slots.length) next = slots.map((r) => ({ label: r.label, from: r.cur, to: r.want }));
     }
-    return { rows, next, done: live.every((r) => r.ok), bonus };
+    const done = live.every((r) => r.ok);
+    if (bonus) {
+      for (const r of rows) {
+        if (r.cur != null) r.cur += bonus;
+        if (!r.skip) { r.want += bonus; r.wantText = r.wantText.replace(/\d+/, (n) => +n + bonus); }
+      }
+      if (next) for (const x of next) { x.from += bonus; x.to += bonus; }
+    }
+    return { rows, next, done, bonus };
   }
 
   // 디스크 한 장에 대한 안내: 판정, 이 슬롯에서 챙길 부옵(주옵과 같은 스탯은 부옵으로 안 붙으므로 뺀다), 빠진 부옵

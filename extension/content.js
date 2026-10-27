@@ -1,5 +1,5 @@
 // 격리된 content script: inject.js가 넘긴 응답을 평가해서 패널로 그린다.
-// 디자인: docs/DESIGN.md (Apple 계열 — Parchment 서피스, 단일 Action Blue, pill 칩, 그림자 없음)
+// 디자인: docs/design/DESIGN.md (Apple 계열 — Parchment 서피스, 단일 Action Blue, pill 칩, 그림자 없음)
 (() => {
   // 리포트 탭(report.html)에서 불러오면 패널 대신 전체 에이전트 리포트로 동작한다
   const REPORT = location.protocol === "chrome-extension:";
@@ -15,6 +15,11 @@
   let width = 400;
   try { width = +localStorage.getItem(WIDTH_KEY) || 400; } catch (e) {}
   const clampWidth = (w) => Math.round(Math.max(360, Math.min(w, window.innerWidth - 48)));
+  // 리포트 모드 양옆 폭: 가운데가 480px 아래로 줄지 않게 한다
+  const SIDE_KEY = "zzzDiscAdvisor.sides", SIDES = ["nav", "prof"];
+  let sides = { nav: 400, prof: 400 };
+  try { Object.assign(sides, JSON.parse(localStorage.getItem(SIDE_KEY) || "{}")); } catch (e) {}
+  const clampSide = (k, w) => Math.round(Math.max(280, Math.min(w, 640, window.innerWidth - sides[k === "nav" ? "prof" : "nav"] - 480)));
   const sysDark = () => window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   const isDark = () => (theme ? theme === "dark" : sysDark());
 
@@ -57,7 +62,7 @@
   const CSS = `
   :host { all: initial; }
   .panel {
-    /* 라이트 (docs/DESIGN.md 기본 팔레트) */
+    /* 라이트 (docs/design/DESIGN.md 기본 팔레트) */
     --primary: #0066cc; --primary-focus: #0071e3;
     --ink: #1d1d1f; --ink-80: #333333; --ink-60: #6e6e73; --ink-48: #7a7a7a; --on-ink: #ffffff;
     --surface: #f5f5f7; --header: rgba(245, 245, 247, 0.8); --card: #ffffff;
@@ -95,15 +100,50 @@
       --pass: #64d2ff; --pass-bg: rgba(100, 210, 255, 0.14); --good: #30d158; --zzz: #f68b2e; --fail: #ff6961; --fail-bg: rgba(255, 105, 97, 0.14);
       color-scheme: dark;
     }
-  /* 리포트 모드: 왼쪽 에이전트 목록 + 오른쪽 패널 화면 */
-  .panel.page { position: static; width: auto; height: 100vh; max-height: none; border: 0; border-radius: 0;
-    display: grid; grid-template-columns: 400px minmax(0, 1fr); }
+  /* 리포트 모드: 왼쪽 에이전트 목록 + 가운데 디스크 평가 + 오른쪽 에이전트 프로필. 양옆 폭은 경계의 손잡이(.sgrip)로 조절한다 */
+  .panel.page { position: relative; top: 0; right: 0; width: auto; height: 100vh; max-height: none; border: 0; border-radius: 0;
+    display: grid; grid-template-columns: var(--nw, 400px) minmax(0, 1fr) var(--pw, 400px); }
   .page .scroll { height: 100vh; }
-  /* 목록(400px)을 빼고 남은 칸이 아니라 화면 전체의 중앙에 둔다. 화면이 좁으면 가능한 만큼만 오른쪽으로 민다 */
-  .page header, .page .body { max-width: 800px; margin: 0 auto 0 max(0px, calc(50vw - 800px)); box-sizing: border-box; }
+  .page header, .page .body { max-width: 800px; margin: 0 auto; box-sizing: border-box; }
+  .sgrip { position: absolute; top: 0; bottom: 0; z-index: 3; width: 9px; cursor: col-resize; touch-action: none; }
+  .sgrip.l { left: calc(var(--nw, 400px) - 4px); }
+  .sgrip.r { right: calc(var(--pw, 400px) - 5px); }
+  .sgrip:hover, .sgrip.on, .sgrip:focus-visible { outline: 0; background: linear-gradient(to right, transparent 4px, var(--primary-focus) 4px, var(--primary-focus) 6px, transparent 6px); }
+  /* 프로필: 흰 타일 위 일러스트(투명 PNG라 제품 그림자를 쓴다) → Parchment 위 섹션별 store-utility-card */
+  .prof { height: 100vh; overflow: auto; border-left: 1px solid var(--hairline); background: var(--surface); box-sizing: border-box; }
+  .prof .hero { display: grid; justify-items: center; gap: 4px; padding: 24px 24px 24px; background: var(--card); text-align: center; }
+  .prof .art { width: 100%; max-width: 360px; aspect-ratio: 1; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(3px 5px 30px rgba(0, 0, 0, 0.22)); }
+  .prof .hero h2 { overflow-wrap: anywhere; }
+  .prof .nm { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .prof .nm .rk { width: 32px; height: auto; flex: none; }
+  /* 기본 정보: 이름 아래 pill 칩 한두 줄 */
+  .prof .info { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+  .prof .info span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 9999px; background: var(--surface);
+    font: 400 12px/1.4 var(--text); letter-spacing: -0.12px; color: var(--ink-80); white-space: nowrap; }
+  .prof .info img { width: 18px; height: 18px; margin-left: -5px; padding: 1px; box-sizing: border-box; border-radius: 9999px; object-fit: contain; background: #1d1d1f; }
+  .prof .in { display: grid; gap: 24px; padding: 24px 20px; }
+  /* 캐릭터 스탯: 게임처럼 아이콘 + 이름 | 기본값 위, +추가값(초록) 아래 | 최종값 */
+  .row.kv { display: flex; align-items: center; gap: 10px; min-height: 30px; padding-top: 6px; padding-bottom: 6px; font: 400 14px/1.43 var(--text); letter-spacing: -0.224px; }
+  .kv .k { flex: 1; display: inline-flex; align-items: center; gap: 8px; color: var(--ink-80); }
+  /* 전적 페이지 SVG는 흰색이라 mask로 글자색을 입힌다 (라이트·다크 공통) */
+  .kv .pi { width: 18px; height: 18px; flex: none; background: currentColor; -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; }
+  .kv .ba { display: grid; justify-items: end; font: 600 11px/1.25 var(--text); color: var(--ink-60); font-variant-numeric: tabular-nums; }
+  .kv .ba .plus { color: var(--good); }
+  .kv .v { min-width: 56px; text-align: right; font: 600 17px/1.24 var(--text); letter-spacing: -0.374px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .quote { margin: 0; font: 400 14px/1.6 var(--text); letter-spacing: -0.224px; color: var(--ink-80); }
+  .quote + .quote { margin-top: 6px; }
+  .quote.by { text-align: right; font-size: 12px; letter-spacing: -0.12px; color: var(--ink-48); margin-top: 2px; }
+  /* 화면이 좁으면 프로필을 디스크 평가 아래로 내리고 페이지 전체를 스크롤한다 */
+  @media (max-width: 1279px) {
+    .panel.page { grid-template-columns: var(--nw, 400px) minmax(0, 1fr); height: auto; overflow: visible; }
+    .page nav { grid-row: 1 / span 2; position: sticky; top: 0; align-self: start; }
+    .page .scroll { height: auto; overflow: visible; }
+    .prof { grid-column: 2; height: auto; overflow: visible; border-left: 0; }
+    .sgrip.r { display: none; }
+  }
   nav { height: 100vh; overflow: auto; border-right: 1px solid var(--hairline); background: var(--card); padding: 16px 10px; box-sizing: border-box; }
-  /* 게임 에이전트 목록처럼 한 줄에 4명: 초상화 + 레벨, 아래에 이름과 목표 달성 */
-  .ags { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 8px; }
+  /* 게임 에이전트 목록처럼 (기본 폭에서 한 줄에 4명): 초상화 + 레벨, 아래에 이름과 목표 달성 */
+  .ags { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px 8px; }
   .ag { display: grid; gap: 2px; justify-items: center; text-align: center; color: var(--ink); text-decoration: none; border-radius: 12px; padding: 4px; }
   .ag:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 0; }
   .ag .pic { position: relative; width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--valid-bg);
@@ -112,17 +152,39 @@
   .ag.on .pic { border-color: var(--primary-focus); }
   .ag img, .ag .ph { width: 100%; height: 100%; object-fit: cover; display: grid; place-items: center; font: 600 18px/1 var(--text); color: var(--ink-60); }
   .ag .lv { position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 0; background: rgba(0, 0, 0, 0.6); color: #fff; font: 400 11px/1.3 var(--text); }
-  /* 등급 배지: 게임처럼 S는 주황, A는 보라 */
-  .ag .rk { position: absolute; top: 3px; left: 3px; min-width: 18px; padding: 1px 4px; box-sizing: border-box; border-radius: 9999px;
-    background: var(--zzz); color: #fff; font: 600 11px/16px var(--text); }
-  .ag .rk.A { background: #a35cf0; }
+  /* 등급: 위키의 S/A RANK 배지(icons/agent_*.png, wiki.hoyolab.com/_nuxt/img/agent_s·a). 위키 카드처럼 여백 없이 왼쪽 위 모서리에 붙인다 */
+  .ag .rk { position: absolute; top: 0; left: 0; width: 28%; height: auto; object-fit: contain; }
   .ag b { width: 100%; font: 600 12px/1.3 var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ag .gl { font: 400 11px/1.2 var(--text); color: var(--ink-60); white-space: nowrap; }
   .ag .gl.no { color: var(--fail); }
   .ag .gl.ok { color: var(--pass); }
+  /* 필터: 평소엔 pill 버튼만, 펼치면 Parchment 판 위에 configurator-option-chip (선택 시 2px Action Blue 테두리) */
+  /* 목록 맨 위 확장 이름: 팝업과 같은 아이콘 + 이름 */
+  .brand { display: flex; align-items: center; gap: 10px; margin: 4px 4px 16px; }
+  .brand img { width: 32px; height: 32px; flex: none; border-radius: 8px; }
+  .brand b { font: 600 21px/1.19 var(--display); letter-spacing: 0.231px; color: var(--ink); }
+  .fbar { display: flex; align-items: center; gap: 10px; margin: 0 4px 12px; }
+  .fbar .fine { flex: 1; }
+  .fbtn { border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .fbtn[aria-expanded="true"] { background: var(--ink); color: var(--on-ink); }
+  .fbtn .badge { min-width: 16px; padding: 0 5px; box-sizing: border-box; border-radius: 9999px; background: var(--primary); color: #fff; font: 600 11px/16px var(--text); text-align: center; }
+  .flink { all: unset; cursor: pointer; color: var(--primary); font: 400 12px/1.2 var(--text); border-radius: 5px; }
+  .fpanel { display: grid; gap: 16px; margin: 0 0 16px; padding: 16px; border-radius: 18px; background: var(--surface); }
+  .flabel { display: block; margin-bottom: 8px; font: 600 12px/1.3 var(--text); letter-spacing: -0.12px; color: var(--ink-60); }
+  .fchips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fchip { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 5px;
+    border-radius: 9999px; background: var(--card); border: 1px solid var(--hairline); color: var(--ink); font: 400 13px/1.2 var(--text); letter-spacing: -0.2px; }
+  .fchip.t { padding: 9px 14px; }
+  .fchip[aria-pressed="true"] { border: 2px solid var(--primary-focus); padding: 4px 11px 4px 4px; font-weight: 600; }
+  .fchip.t[aria-pressed="true"] { padding: 8px 13px; }
+  /* 직업 아이콘이 은색이라 게임처럼 어두운 원 위에 둔다 */
+  .fchip img { width: 26px; height: 26px; padding: 2px; box-sizing: border-box; border-radius: 9999px; object-fit: contain; background: #1d1d1f; }
+  .fbtn:active, .fchip:active { transform: scale(0.95); }
+  .fchip:focus-visible, .flink:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
   @media (max-width: 640px) {
     .panel.page { display: block; height: auto; }
-    .page nav { height: auto; max-height: 40vh; border-right: 0; border-bottom: 1px solid var(--hairline); }
+    .sgrip { display: none; }
+    .page nav { position: static; height: auto; max-height: 40vh; border-right: 0; border-bottom: 1px solid var(--hairline); }
     .page .scroll { height: auto; }
   }
   .scroll { overflow: auto; overscroll-behavior: contain; min-height: 0; }
@@ -370,9 +432,9 @@
     const next = s.next ? `다음 단계: ${s.next.map((x) => `${x.label} ${x.from}→${x.to}`).join(", ")}` : "권장 스킬 레벨을 모두 달성했습니다.";
     const sel = res.tiers[res.selected];
     const from = s.from && s.from !== sel.label ? ` ${sel.label} 탭에는 스킬 기준이 없어서, ${s.from} 기준으로 표시합니다.` : "";
-    const bonus = s.bonus ? ` 돌파 보너스 +${s.bonus}는 빼고 계산합니다.` : "";
+    const bonus = s.bonus ? ` 레벨은 게임과 같이 형상 시네마 보너스 +${s.bonus}를 포함한 값입니다.` : "";
     return `<section><h3>스킬 레벨</h3><div class="goals">${boxes}</div>` +
-      `<p class="fine" style="margin-top:8px">${esc(next)}<br>육성 순서: 올스킬 7 → 중요한 스킬 9 → 권장 레벨.${esc(bonus + from)}</p></section>`;
+      `<p class="fine" style="margin-top:8px">${esc(next)}<br>육성 순서: 올스킬 ${7 + s.bonus} → 중요한 스킬 ${9 + s.bonus} → 권장 레벨.${esc(bonus + from)}</p></section>`;
   }
 
   const TAG = { high: "필수", mid: "권장", low: "참고", info: "정보" };
@@ -405,19 +467,126 @@
       ${mainHtml}<div class="subs">${subs}</div>${tipHtml(d.tip)}</div>`;
   }
 
+  // 리포트 모드 필터: 속성(속성 피해 보너스 스탯 이름, 없으면 element_type), 직업군, 진영. 묶음마다 하나씩 고른다
+  // 아이콘: 전적 페이지 번들의 ZzzGameElemental*1 / ZzzGameSpecialties*1 (번호표도 번들과 같다)
+  // ponytail: 번호표는 번들에서 본 값만 넣음, 새 속성·직업이 나오면 번들에서 다시 뽑을 것
+  const GT = (h) => `https://act.hoyoverse.com/gt-ui/assets/icons/${h}.png`;
+  const ELEM = { 200: ["물리", "2bc246d1451fa4ce"], 201: ["불", "a4040e05ea38849b"], 202: ["얼음", "d2c575830f549349"], 203: ["전기", "2baf620986a19284"],
+    204: ["바람", "3374a45bdeba61e6"], 205: ["에테르", "544076112a8f3460"], 300: ["빛", "2b64904fe49e62a0"] };
+  const PROF = { 1: ["강공", "7e83c99ab809e0bd"], 2: ["격파", "b645b939ff4d5251"], 3: ["이상", "41752af83e36fef2"], 4: ["지원", "107144654780ff57"],
+    5: ["방어", "be8338715489395f"], 6: ["명파", "4c82c22f80a2a131"], 7: [null, "032ace9cdedababe"] };
+  // 묶음마다 [이름, 아이콘]. 속성 이름은 스탯의 "○○ 속성 피해 보너스"를 먼저 쓴다 (번호표의 이름보다 게임 표기에 가깝다)
+  const FACETS = {
+    속성: (a) => {
+      const p = (a.properties || []).find((p) => /^\S+ (속성 )?피해 보너스$/.test(p.property_name));
+      const [name, icon] = ELEM[a.element_type] || [];
+      return [p ? p.property_name.split(" ")[0] : name, icon && GT(icon)];
+    },
+    직업군: (a) => { const [name, icon] = PROF[a.avatar_profession] || []; return [name, icon && GT(icon)]; },
+    진영: (a) => [a.camp_name_mi18n, a.group_icon_path],
+  };
+  const filt = {};
+  let filtOpen = false;
+  function facetHtml() {
+    return Object.entries(FACETS).map(([k, f]) => {
+      const icons = new Map();
+      for (const a of roster) { const [v, i] = f(a); if (v && !icons.get(v)) icons.set(v, i); }
+      if (icons.size < 2) return "";
+      const vals = [...icons.keys()].sort((x, y) => x.localeCompare(y, "ko"));
+      return `<div role="group" aria-label="${k}"><span class="flabel">${k}</span><div class="fchips">${vals.map((v) => {
+        const i = icons.get(v);
+        return `<button class="fchip${i ? "" : " t"}" data-f="${esc(k)}" data-v="${esc(v)}" aria-pressed="${filt[k] === v}">` +
+          `${i ? `<img src="${esc(i)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}${esc(v)}</button>`;
+      }).join("")}</div></div>`;
+    }).join("");
+  }
+
+  // 리포트 모드 오른쪽 열: 위키 일러스트·소개 대사(data/agent-wiki.js) + 전적 페이지의 캐릭터 스탯 전체 (최종값, 아래에 기본 + 추가)
+  const nk = (s) => String(s || "").replace(/[\s·「」]/g, "");
+  function wikiOf(a) {
+    const W = window.ZZZ_AGENT_WIKI || {};
+    const k = Object.keys(W).find((n) => nk(n) === nk(a.full_name_mi18n)) || Object.keys(W).find((n) => nk(n) === nk(a.name_mi18n));
+    return k ? W[k] : {};
+  }
+  // 스탯 아이콘: 전적 페이지 번들의 ZzzGamePanel* (property_id 기준, 속성 피해 보너스는 이름으로)
+  // ponytail: 번들에서 본 id만 넣음, 새 스탯이 나오면 아이콘 없이 이름만 나온다
+  const PANEL = { 1: "317ce2a47d66fd3e", 2: "4883b409fd524b6d", 3: "f2a930b4deba8528", 4: "ae8b5440f710fad8", 5: "09bfc76f660dd0d1", 6: "80d52f918714bed4",
+    7: "2d4c15cee5a66ebe", 8: "c44eb009da6c398b", 9: "1b15470e75018348", 11: "f26955cea8f29f4f", 232: "b5cae085c3f59de9" };
+  const statIcon = (p) => {
+    const h = PANEL[p.property_id] || (/피해 보너스$/.test(p.property_name) ? "626f2ba663825112" : null);
+    return h && `https://act.hoyoverse.com/gt-ui/assets/icons/${h}.svg`;
+  };
+  const rankBadge = (a) => /^[SA]$/.test(a.rarity) ? `<img class="rk" src="${chrome.runtime.getURL(`icons/agent_${a.rarity.toLowerCase()}.png`)}" alt="${esc(a.rarity)}급">` : "";
+  function profileHtml(a) {
+    const w = wikiOf(a);
+    const img = w.img || a.role_square_url;
+    const info = [a.level && `Lv. ${esc(a.level)}`, a.rank != null && `형상 시네마 ${esc(a.rank)}`,
+      ...Object.values(FACETS).map((f) => { const [v, i] = f(a); return v && `${i ? `<img src="${esc(i)}" alt="" referrerpolicy="no-referrer">` : ""}${esc(v)}`; })]
+      .filter(Boolean).map((t) => `<span>${t}</span>`).join("");
+    // 위키 소개: 대사 줄과 "——누구" 출처 줄
+    const quote = (w.desc || "").split("\n").filter(Boolean).map((l) => /^—/.test(l) ? `<p class="quote by">${esc(l)}</p>` : `<p class="quote">${esc(l)}</p>`).join("");
+    const stats = (a.properties || []).map((p) => {
+      const i = statIcon(p);
+      return `<div class="row kv"><span class="k">${i ? `<span class="pi" style="--i:url('${esc(i)}')" aria-hidden="true"></span>` : ""}${esc(p.property_name)}</span>` +
+        (p.add && p.base ? `<span class="ba" aria-label="기본 ${esc(p.base)}, 추가 ${esc(p.add)}"><span>${esc(p.base)}</span><span class="plus">+${esc(p.add)}</span></span>` : "") +
+        `<span class="v">${esc(p.final || p.base)}</span></div>`;
+    }).join("");
+    return `<aside class="prof" data-id="${esc(a.id)}" aria-label="에이전트 프로필">
+      <div class="hero">
+        ${img ? `<img class="art" src="${esc(img)}" alt="${esc(a.name_mi18n)}" referrerpolicy="no-referrer">` : ""}
+        <div class="nm">${rankBadge(a)}<h2>${esc(a.name_mi18n)}</h2></div>${a.full_name_mi18n && a.full_name_mi18n !== a.name_mi18n ? `<p class="fine">${esc(a.full_name_mi18n)}</p>` : ""}
+        ${info ? `<div class="info" aria-label="기본 정보">${info}</div>` : ""}
+      </div>
+      <div class="in">
+        ${/* 소개 섹션: 나중에 쓸 수도 있어서 숨겨 둠
+        quote ? `<section><h3>소개</h3><div class="card"><div class="row">${quote}</div></div><p class="fine" style="margin-top:8px">출처 · HoYoWiki</p></section>` : */ ""}
+        ${stats ? `<section><h3>캐릭터 스탯</h3><div class="card">${stats}</div></section>` : ""}
+      </div>
+    </aside>`;
+  }
+
+  // 경계 손잡이: 끌기, 방향키(16px씩), 더블클릭(400px로 복귀)
+  function sideGrip(g) {
+    const k = g.dataset.side, dir = k === "nav" ? 1 : -1, panel = shadow.querySelector(".panel");
+    const set = (w) => { sides[k] = clampSide(k, w); panel.style.setProperty(k === "nav" ? "--nw" : "--pw", sides[k] + "px"); g.setAttribute("aria-valuenow", sides[k]); };
+    const save = () => { try { localStorage.setItem(SIDE_KEY, JSON.stringify(sides)); } catch (e) {} };
+    g.onpointerdown = (e) => {
+      e.preventDefault();
+      const x0 = e.clientX, w0 = sides[k];
+      g.setPointerCapture(e.pointerId);
+      g.classList.add("on");
+      g.onpointermove = (ev) => set(w0 + dir * (ev.clientX - x0));
+      g.onpointerup = () => { g.onpointermove = g.onpointerup = null; g.classList.remove("on"); save(); };
+    };
+    g.onkeydown = (e) => {
+      const d = { ArrowLeft: -16, ArrowRight: 16 }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      set(sides[k] + dir * d);
+      save();
+    };
+    g.ondblclick = () => { set(400); save(); };
+  }
+
   // 리포트 모드 왼쪽 목록: 선택한 등급 기준 달성 여부와 교체할 디스크 수
   function navHtml() {
-    const items = roster.map((a) => {
+    const shown = roster.filter((a) => Object.entries(filt).every(([k, v]) => FACETS[k](a)[0] === v));
+    const on = Object.keys(filt).length;
+    const items = shown.map((a) => {
       const r = window.ZZZEval.evaluate(a, window.ZZZ_BENCHMARK, tier);
       const t = r.tiers[r.selected].result;
       const goal = !t || t.pass === null ? "기준 없음" : t.pass ? "목표 달성" : `${t.checks.filter((c) => c.gap > 0).length}개 부족`;
       const swap = r.discs.filter((d) => d.tip.level === "high" || d.grade.key === "bad").length;
       const pic = a.role_square_url ? `<img src="${esc(a.role_square_url)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="ph" aria-hidden="true">${esc(String(a.name_mi18n).slice(0, 1))}</span>`;
       return `<a class="ag${a === lastAvatar ? " on" : ""}" href="#${esc(a.id)}" title="${esc(`${a.name_mi18n} · ${goal}${swap ? ` · 디스크 ${swap}개 교체` : ""}`)}"${a === lastAvatar ? ' aria-current="page"' : ""}>` +
-        `<span class="pic">${pic}${a.level ? `<span class="lv">Lv. ${esc(a.level)}</span>` : ""}${a.rarity ? `<span class="rk ${esc(a.rarity)}" aria-label="${esc(a.rarity)}급">${esc(a.rarity)}</span>` : ""}</span>` +
+        `<span class="pic">${pic}${rankBadge(a)}` +
+        `${a.level ? `<span class="lv">Lv. ${esc(a.level)}</span>` : ""}</span>` +
         `<b>${esc(a.name_mi18n)}</b><span class="gl${t && t.pass === false ? " no" : t && t.pass ? " ok" : ""}">${esc(goal)}</span></a>`;
     }).join("");
-    return `<nav aria-label="에이전트 목록"><div class="ags">${items}</div></nav>`;
+    return `<nav aria-label="에이전트 목록"><div class="brand"><img src="${chrome.runtime.getURL("icons/icon48.png")}" alt=""><b>디스크 페어리</b></div><div class="fbar"><button class="hbtn fbtn" id="filt" aria-expanded="${filtOpen}">필터${on ? `<span class="badge">${on}</span>` : ""}</button>` +
+      `<span class="fine">${shown.length} / ${roster.length}명</span>${on ? `<button class="flink" id="freset">초기화</button>` : ""}</div>` +
+      (filtOpen ? `<div class="fpanel">${facetHtml()}</div>` : "") +
+      `<div class="ags">${items || `<p class="fine" style="grid-column:1/-1">조건에 맞는 에이전트가 없습니다.</p>`}</div></nav>`;
   }
 
   function render(res) {
@@ -433,8 +602,9 @@
     const borrowed = res.statFrom && res.statFrom !== sel.label ? `<p class="fine">시트의 ${esc(sel.label)} 탭에는 주옵·부옵 기준이 없어서, ${esc(res.statFrom)} 기준으로 판정합니다.</p>` : "";
 
     const navTop = REPORT && shadow.querySelector("nav") ? shadow.querySelector("nav").scrollTop : 0;
+    const profTop = REPORT && shadow.querySelector(".prof") && shadow.querySelector(".prof").dataset.id === String(lastAvatar.id) ? shadow.querySelector(".prof").scrollTop : 0;
     shadow.innerHTML = `<style>${CSS}</style>
-      <div class="panel${minimized ? " min" : ""}${REPORT ? " page" : ""}"${theme ? ` data-theme="${theme}"` : ""} role="dialog" aria-label="디스크 평가" style="--w:${clampWidth(width)}px">
+      <div class="panel${minimized ? " min" : ""}${REPORT ? " page" : ""}"${theme ? ` data-theme="${theme}"` : ""} role="dialog" aria-label="디스크 평가" style="--w:${clampWidth(width)}px${REPORT ? `;--nw:${sides.nav}px;--pw:${sides.prof}px` : ""}">
         ${REPORT ? navHtml() : `<div class="grip" title="드래그해서 폭 조절" aria-hidden="true"></div>`}
         <div class="scroll">
         <header>
@@ -460,6 +630,7 @@
             <div class="btns"><a class="btn" href="${STORE_URL}" target="_blank" rel="noopener">업데이트 확인</a><a class="btn" href="${ISSUE_URL}" target="_blank" rel="noopener">개선사항 건의</a></div></div>
         </div>
         </div>
+        ${REPORT ? profileHtml(lastAvatar) + SIDES.map((k) => `<div class="sgrip ${k === "nav" ? "l" : "r"}" data-side="${k}" role="separator" aria-orientation="vertical" tabindex="0" aria-label="${k === "nav" ? "에이전트 목록" : "프로필"} 폭 조절 (방향키, 더블클릭하면 원래대로)" aria-valuenow="${sides[k]}"></div>`).join("") : ""}
       </div>`;
 
     shadow.getElementById("theme").onclick = (e) => {
@@ -470,7 +641,22 @@
       e.currentTarget.setAttribute("aria-label", isDark() ? "라이트 모드로 전환" : "다크 모드로 전환");
       e.currentTarget.title = isDark() ? "라이트 모드" : "다크 모드";
     };
-    if (REPORT) shadow.querySelector("nav").scrollTop = navTop;
+    if (REPORT) {
+      shadow.querySelector("nav").scrollTop = navTop;
+      shadow.querySelector(".prof").scrollTop = profTop;
+      shadow.querySelectorAll(".sgrip").forEach(sideGrip);
+      const again = () => render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
+      shadow.getElementById("filt").onclick = () => { filtOpen = !filtOpen; again(); };
+      const reset = shadow.getElementById("freset");
+      if (reset) reset.onclick = () => { for (const k in filt) delete filt[k]; again(); };
+    }
+    shadow.querySelectorAll("[data-f]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const { f, v } = b.dataset;
+        if (filt[f] === v) delete filt[f]; else filt[f] = v;
+        render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
+      })
+    );
     const grip = shadow.querySelector(".grip");
     if (grip) {
     grip.onpointerdown = (e) => {
