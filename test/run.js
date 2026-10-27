@@ -81,10 +81,11 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.deepEqual(rem.rows.map((r) => r.cur), [11, 9, 10, 11, 10]);
   assert.ok(rem.rows[1].skip);
   assert.deepEqual(rem.next.map((x) => `${x.label} ${x.from}→${x.to}`), ["일반 공격 11→12", "지원 10→12", "특수 스킬 11→12", "궁극기 10→12"]);
-  // 리나 3돌·레벨 1: API 레벨 3은 보너스 +2가 포함된 값이라 1로 본다. 목표 1,1,1,9,9 → 먼저 7까지
+  // 리나 3돌·레벨 1: API 레벨 3은 보너스 +2가 포함된 값. 판정은 1로 하고(목표 1,1,1,9,9 → 먼저 7까지), 표시는 게임처럼 +2
   const rina = ev("리나", 3, [3, 3, 3, 3, 1, 3]);
   assert.equal(rina.bonus, 2);
-  assert.deepEqual(rina.next, [{ label: "특수 스킬", from: 1, to: 7 }, { label: "궁극기", from: 1, to: 7 }]);
+  assert.deepEqual(rina.next, [{ label: "특수 스킬", from: 3, to: 9 }, { label: "궁극기", from: 3, to: 9 }]);
+  assert.deepEqual(rina.rows.map((r) => `${r.cur}/${r.wantText}`), ["3/1", "3/1", "3/1", "3/11", "3/11"]);
   // 「시드」 0돌, 목표 12,7,7,11,12 → 모두 달성
   const seed = ev("「시드」", 0, [12, 12, 9, 12, 7, 9]);
   assert.ok(seed.done && !seed.next);
