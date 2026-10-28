@@ -97,10 +97,18 @@
     return w;
   }
 
-  function discGrade(eff) {
-    if (eff >= 6) return { key: "great", text: "우수" };
-    if (eff >= 4) return { key: "ok", text: "양호" };
-    if (eff >= 2.5) return { key: "meh", text: "보통" };
+  // 이 주옵으로 낼 수 있는 최대 점수: 부옵 4개, 강화 5회를 전부 가장 높은 부옵에 (주옵과 같은 스탯은 부옵으로 안 붙는다)
+  function discCap(weights, mainKey) {
+    const w = Object.keys(weights).filter((k) => k !== mainKey).map((k) => weights[k]).sort((a, b) => b - a).slice(0, 4);
+    return w.length ? w[0] * 5 + w.reduce((a, b) => a + b, 0) : 0;
+  }
+
+  // 기준은 절대 점수지만, 최대 점수가 낮은 슬롯(자오 체력% 주옵 → 깡체력만 유효)은 최대 점수 대비 비율로 낮춘다
+  function discGrade(eff, cap) {
+    const t = (abs, ratio) => Math.min(abs, ratio * (cap || Infinity));
+    if (eff >= t(6, 0.7)) return { key: "great", text: "우수" };
+    if (eff >= t(4, 0.45)) return { key: "ok", text: "양호" };
+    if (eff >= t(2.5, 0.3)) return { key: "meh", text: "보통" };
     return { key: "bad", text: "교체 후보" };
   }
 
@@ -269,12 +277,12 @@
     const lack = want.filter((k) => !has.has(k));
     const junk = d.subs.filter((s) => !s.weight).length;
     let level, text;
-    if (d.mainOk === false) { level = "high"; text = `주옵이 맞지 않아 먼저 교체해야 합니다. 새 디스크는 ${d.mainAllowed.join(" / ")} 주옵으로 고르세요.`; }
-    else if (d.grade.key === "great") { level = "keep"; text = "강화가 유효 부옵에 잘 들어갔습니다. 그대로 쓰세요."; }
-    else if (d.grade.key === "ok") { level = "keep"; text = "쓸 만한 디스크입니다. 점수가 더 높은 디스크가 나오면 바꾸세요."; }
-    else if (d.grade.key === "meh") { level = "mid"; text = `유효 강화가 ${d.eff}회뿐입니다. 여유가 있으면 바꾸세요.`; }
-    else { level = "mid"; text = `유효 강화가 ${d.eff}회로 낮습니다. 우선 교체할 디스크입니다.`; }
-    if (level !== "keep" && junk >= 2) text += ` 유효하지 않은 부옵이 ${junk}개 붙어 있습니다.`;
+    if (d.mainOk === false) { level = "high"; text = `주옵이 맞지 않아 먼저 교체해야 합니다\n새 디스크는 ${d.mainAllowed.join(" / ")} 주옵으로 고르세요`; }
+    else if (d.grade.key === "great") { level = "keep"; text = "강화가 유효 부옵에 잘 들어갔습니다\n그대로 쓰세요"; }
+    else if (d.grade.key === "ok") { level = "keep"; text = "쓸 만한 디스크입니다\n더 좋은 디스크가 있다면 바꾸세요"; }
+    else if (d.grade.key === "meh") { level = "mid"; text = `유효 부옵 점수가 ${d.eff}점(주옵 기준 최대 ${d.cap}점)뿐입니다\n여유가 있으면 바꾸세요`; }
+    else { level = "mid"; text = `유효 부옵 점수가 ${d.eff}점(주옵 기준 최대 ${d.cap}점)으로 낮습니다`; }
+    if (level !== "keep" && junk >= 2) text += `\n유효하지 않은 부옵이 ${junk}개 붙어 있습니다`;
     // 추천 주옵: 4~6번만 (1~3번은 주옵이 고정이라 고를 게 없다). 지금 주옵이면 on
     const mains = (d.mainAllowed || []).map((m) => ({ label: m, on: statKey(m, true) === mk }));
     return { level, text, mains, want: want.map(label), extra: extra.map(label), lack: lack.map(label) };
@@ -304,7 +312,8 @@
         d.totalRolls += s.rolls;
       }
       d.eff = +d.eff.toFixed(1);
-      d.grade = discGrade(d.eff);
+      d.cap = +discCap(weights, d.main && d.main.key).toFixed(1);
+      d.grade = discGrade(d.eff, d.cap);
       if (statRef && d.slot >= 4 && d.slot <= 6) {
         const allowed = (statRef.mains[d.slot] || []).map((m) => statKey(m, true));
         d.mainAllowed = (statRef.mains[d.slot] || []);
@@ -394,7 +403,7 @@
       statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, skills, discs, stats, setInfo, tiers, advice, weights };
   }
 
-  const api = { evaluate, checkTier, statKey, setMatches, label };
+  const api = { evaluate, checkTier, statKey, setMatches, label, discCap, discGrade };
   root.ZZZEval = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);
