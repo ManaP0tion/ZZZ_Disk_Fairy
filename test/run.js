@@ -95,3 +95,17 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.deepEqual(ev("레미엘", 0, [6, 11, 9, 10, 7, 10]).next, [{ label: "일반 공격", from: 6, to: 7 }]);
   console.log("스킬 레벨 테스트 통과");
 }
+{ // 최대 점수가 낮은 슬롯: 자오 체력% 주옵 + 깡체력(0.5)만 유효 → 최대 3점
+  const w = { "HP%": 1, HP: 0.5 };
+  assert.equal(E.discCap(w, "HP%"), 3);
+  assert.equal(E.discGrade(2, 3).key, "ok");   // 448 (+3)
+  assert.equal(E.discGrade(1.5, 3).key, "ok"); // 336 (+2)
+  assert.equal(E.discGrade(1, 3).key, "meh");  // 224 (+1)
+  assert.equal(E.discGrade(0, 3).key, "bad");
+  // 최대 점수가 충분한 슬롯은 기존 절대 기준 그대로
+  const dps = { CR: 1, CD: 1, "ATK%": 1, PEN: 1 };
+  assert.equal(E.discCap(dps, "ATK%"), 8);
+  assert.equal(E.discGrade(2, 9).key, "bad");
+  assert.equal(E.discGrade(0, 0).key, "bad"); // 기준 없음
+  console.log("슬롯 최대 점수 테스트 통과");
+}

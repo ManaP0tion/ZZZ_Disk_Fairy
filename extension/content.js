@@ -269,7 +269,7 @@
   .sub.v { background: var(--valid-bg); border-color: transparent; color: var(--ink); font-weight: 600; }
 
   .tip { grid-column: 1 / 4; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider); display: grid; gap: 4px; }
-  .tip p { margin: 0; font: 400 13px/1.45 var(--text); letter-spacing: -0.2px; color: var(--ink-80); }
+  .tip p { margin: 0; font: 400 13px/1.45 var(--text); letter-spacing: -0.2px; color: var(--ink-80); white-space: pre-line; }
   .tip.high p:first-child { color: var(--fail); font-weight: 600; }
   .tip.mid p:first-child { color: var(--ink); font-weight: 600; }
   .opts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
