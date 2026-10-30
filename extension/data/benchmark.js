@@ -5494,7 +5494,22 @@ window.ZZZ_BENCHMARK = {
        "CD": 110.0,
        "raw": "87 / 110",
        "cond": {
-        "type": "note",
+        "type": "all",
+        "conds": [
+         {
+          "type": "note",
+          "text": "명전"
+         },
+         {
+          "type": "mains456",
+          "mains": [
+           "치명",
+           "관통률",
+           "공격력"
+          ],
+          "text": "치관공"
+         }
+        ],
         "text": "명전, 치관공"
        }
       },
@@ -5503,9 +5518,24 @@ window.ZZZ_BENCHMARK = {
        "CD": 110.0,
        "raw": "72 / 110",
        "cond": {
-        "type": "rank",
-        "n": 2,
-        "op": ">=",
+        "type": "all",
+        "conds": [
+         {
+          "type": "rank",
+          "n": 2,
+          "op": ">=",
+          "text": "2돌"
+         },
+         {
+          "type": "mains456",
+          "mains": [
+           "공격력",
+           "관통률",
+           "공격력"
+          ],
+          "text": "공관공"
+         }
+        ],
         "text": "2돌, 공관공"
        }
       }

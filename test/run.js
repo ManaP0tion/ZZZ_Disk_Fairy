@@ -56,7 +56,8 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   const av = { ...fx.data.avatar_list[0], name_mi18n: "미야비", full_name_mi18n: "호시미 미야비" };
   const r1 = E.evaluate(av, B, "good").tiers.good.result;
   console.log("미야비 conds:", JSON.stringify(r1.conds));
-  assert.deepEqual(r1.conds, [{ kind: "조건 불일치", picked: "456 치관공", options: ["456 치관공", "456 공관공"] }]);
+  assert.deepEqual(r1.conds, [{ kind: "조건 불일치", picked: "456 치관공", options: ["456 치관공", "456 공관공"] },
+    { kind: "조건 불일치", picked: "명전, 치관공", options: ["명전, 치관공", "2돌, 공관공"] }]);
   assert.equal(r1.checks.find((c) => c.stat === "ATK").need, 2900);
   const r2 = E.evaluate(av, B, "good", "456 공관공").tiers.good.result;
   assert.equal(r2.conds[0].picked, "456 공관공");
@@ -108,4 +109,15 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.equal(E.discGrade(2, 9).key, "bad");
   assert.equal(E.discGrade(0, 0).key, "bad"); // 기준 없음
   console.log("슬롯 최대 점수 테스트 통과");
+}
+{ // 복합 조건("2돌, 공관공")은 AND로 판정한다
+  const e = [].concat(Object.values(B.tiers.good.agents)).find((x) => x.name === "미야비");
+  const discs = (m) => [4, 5, 6].map((slot, i) => ({ slot, main: { key: m[i] } }));
+  const crit = (rank, m) => E.checkTier(e, { CR: 90, CD: 150 }, { rank, discs: discs(m), setCounts: {}, weapon: null }, "좋음", "미야비").checks.find((x) => x.stat === "CR");
+  assert.equal(crit(2, ["ATK%", "PENR", "ATK%"]).need, 72);
+  assert.ok(!crit(2, ["ATK%", "PENR", "ATK%"]).assumed);
+  const c = crit(2, ["CR", "PENR", "ATK%"]); // 공관공이 아니면 2돌이어도 72/110을 쓰지 않는다
+  assert.equal(c.need, 87);
+  assert.ok(c.assumed && c.unknown); // "명전"은 판정할 수 없다
+  console.log("복합 조건 테스트 통과");
 }

@@ -170,6 +170,11 @@
         if (res.some((r) => r === false)) return false;
         return res.every((r) => r === true) ? true : null;
       }
+      case "all": {
+        const res = cond.conds.map((x) => condOk(x, c));
+        if (res.some((r) => r === false)) return false;
+        return res.every((r) => r === true) ? true : null;
+      }
     }
     return null;
   }
