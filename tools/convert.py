@@ -69,10 +69,16 @@ MAIN_ABBR = {"치": "치명", "관": "관통률", "공": "공격력", "속": "�
 def parse_cond(text):
     """괄호 조건 해석. 평가 가능한 형태면 type을 붙이고, 아니면 note로 남긴다."""
     t = text.strip().strip("()").strip()
+    # "2돌, 공관공" 같은 복합 조건은 AND로 묶는다. 전부 note면 ("전엔, 마나토 엔진" 같은 택1) 통째로 note로 둔다
+    if "," in t:
+        parts = [parse_cond(p) for p in t.split(",") if p.strip()]
+        if any(p["type"] != "note" for p in parts):
+            return {"type": "all", "conds": parts, "text": t}
+        return {"type": "note", "text": t}
     m = re.match(r"^(\d)번(?: ?주옵)? ?(.+)$", t)
     if m:
         return {"type": "main", "slot": int(m.group(1)), "main": m.group(2).strip(), "text": t}
-    m = re.match(r"^456 ?([가-힣]{3})$", t)
+    m = re.match(r"^(?:456 ?)?([치관공속이에충체방]{3})$", t)
     if m:
         return {"type": "mains456", "mains": [MAIN_ABBR.get(ch, ch) for ch in m.group(1)], "text": t}
     m = re.match(r"^(\d)돌(?:파)? ?(이상|이하)?", t)
