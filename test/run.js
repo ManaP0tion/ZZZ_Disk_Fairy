@@ -38,6 +38,22 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.ok(r.advice.some((a) => a.text.startsWith("디스크 교체 / 6번 주옵 부적합 · 1, 3번 점수 낮음")));
   console.log("디스크 안내 테스트 통과");
 }
+{ // 빈 슬롯에도 추천 주옵·부옵을 안내한다
+  const av = fx.data.avatar_list[0];
+  const r = E.evaluate({ ...av, equip: av.equip.filter((e) => e.equipment_type !== 2 && e.equipment_type !== 6) }, B, "good");
+  assert.deepEqual(r.empty.map((d) => d.slot), [2, 6]);
+  const [two, six] = r.empty.map((d) => d.tip);
+  assert.ok(!two.want.includes("공격력") && !two.extra.includes("공격력")); // 2번 주옵은 깡공격력으로 고정
+  assert.deepEqual(two.mains, []);
+  assert.deepEqual(six.want, ["이상 마스터리", "공격력%"]);
+  assert.deepEqual(six.lack, six.want); // 빈 슬롯은 전부 노려야 할 부옵이다
+  assert.ok(six.mains.length && six.mains.every((m) => !m.on));
+  assert.deepEqual(E.evaluate(av, B, "good").empty, []);
+  const four = E.evaluate({ ...av, equip: [] }, B, "good").empty[3].tip; // 4번 추천 주옵이 이상 마스터리 하나뿐이면 부옵에서 뺀다
+  assert.deepEqual(four.want, ["공격력%"]);
+  assert.ok(four.mains.every((m) => !m.on));
+  console.log("빈 슬롯 안내 테스트 통과");
+}
 // W-엔진 판정
 {
   const av = { ...fx.data.avatar_list[0], weapon: { name: "영롱한 금빛 마음", star: 1 } };

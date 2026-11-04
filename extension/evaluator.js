@@ -273,6 +273,8 @@
     return { rows, next, done, bonus };
   }
 
+  const FIXED_MAIN = { 1: "HP", 2: "ATK", 3: "DEF" };
+
   // 디스크 한 장에 대한 안내: 판정, 이 슬롯에서 챙길 부옵(주옵과 같은 스탯은 부옵으로 안 붙으므로 뺀다), 빠진 부옵
   function discTip(d, weights) {
     const mk = d.mainOk === false ? null : d.main && d.main.key; // 주옵이 틀리면 새 디스크 기준으로 안내
@@ -282,14 +284,15 @@
     const lack = want.filter((k) => !has.has(k));
     const junk = d.subs.filter((s) => !s.weight).length;
     let level, text;
-    if (d.mainOk === false) { level = "high"; text = `주옵이 맞지 않아 먼저 교체해야 합니다\n새 디스크는 ${d.mainAllowed.join(" / ")} 주옵으로 고르세요`; }
+    if (d.empty) { level = "high"; text = "디스크를 장착하지 않은 슬롯입니다"; }
+    else if (d.mainOk === false) { level = "high"; text = `주옵이 맞지 않아 먼저 교체해야 합니다\n새 디스크는 ${d.mainAllowed.join(" / ")} 주옵으로 고르세요`; }
     else if (d.grade.key === "great") { level = "keep"; text = "강화가 유효 부옵에 잘 들어갔습니다\n그대로 쓰세요"; }
     else if (d.grade.key === "ok") { level = "keep"; text = "쓸 만한 디스크입니다\n더 좋은 디스크가 있다면 바꾸세요"; }
     else if (d.grade.key === "meh") { level = "mid"; text = `유효 부옵 점수가 ${d.eff}점(주옵 기준 최대 ${d.cap}점)뿐입니다\n여유가 있으면 바꾸세요`; }
     else { level = "mid"; text = `유효 부옵 점수가 ${d.eff}점(주옵 기준 최대 ${d.cap}점)으로 낮습니다`; }
     if (level !== "keep" && junk >= 2) text += `\n유효하지 않은 부옵이 ${junk}개 붙어 있습니다`;
     // 추천 주옵: 4~6번만 (1~3번은 주옵이 고정이라 고를 게 없다). 지금 주옵이면 on
-    const mains = (d.mainAllowed || []).map((m) => ({ label: m, on: statKey(m, true) === mk }));
+    const mains = (d.mainAllowed || []).map((m) => ({ label: m, on: !d.empty && statKey(m, true) === mk }));
     return { level, text, mains, want: want.map(label), extra: extra.map(label), lack: lack.map(label) };
   }
 
@@ -328,6 +331,14 @@
     }
     const missing = [1, 2, 3, 4, 5, 6].filter((s) => !discs.some((d) => d.slot === s));
     if (missing.length) advice.unshift({ level: "high", text: `${missing.join(", ")}번 슬롯 비어 있음` });
+    // 빈 슬롯에도 추천 주옵·부옵을 안내한다. 주옵이 하나로 정해지면(1~3번 고정, 4~6번 추천 주옵 1개) 그 스탯을 추천 부옵에서 뺀다
+    const empty = missing.map((slot) => {
+      const mainAllowed = (statRef && statRef.mains[slot]) || [];
+      const key = FIXED_MAIN[slot] || (mainAllowed.length === 1 ? statKey(mainAllowed[0], true) : null);
+      const d = { slot, empty: true, subs: [], main: key ? { key } : null, mainAllowed };
+      d.tip = discTip(d, weights);
+      return d;
+    });
 
     // 2) 세트 판정
     const counts = {};
@@ -405,7 +416,7 @@
     const order = { high: 0, mid: 1, low: 2, info: 3 };
     advice.sort((a, b) => order[a.level] - order[b.level]);
     return { name: avatar.name_mi18n, id: avatar.id, matched: !!ref, ref, selected: sel,
-      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, skills, discs, stats, setInfo, tiers, advice, weights };
+      statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, skills, discs, empty, stats, setInfo, tiers, advice, weights };
   }
 
   const api = { evaluate, checkTier, statKey, setMatches, label, discCap, discGrade };

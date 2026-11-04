@@ -243,6 +243,7 @@
   .disc { display: grid; grid-template-columns: 40px 1fr auto; gap: 2px 12px; align-items: start;
     background: var(--card); border: 1px solid var(--hairline); border-radius: 18px; padding: 16px; }
   .disc.bad { border: 2px solid var(--zzz); padding: 15px; }
+  .disc.none { border-style: dashed; }
   .slot { grid-row: span 3; display: grid; justify-items: center; gap: 6px; font: 600 21px/1.19 var(--display); color: var(--ink-60); font-variant-numeric: tabular-nums; }
   .slot img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; background: var(--valid-bg); }
   .set { font: 600 15px/1.29 var(--text); letter-spacing: -0.24px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -453,6 +454,7 @@
   }
 
   function discRow(d) {
+    if (d.empty) return `<div class="disc none"><div class="slot"><span>${d.slot}</span></div><div class="set">비어 있음</div>${tipHtml(d.tip)}</div>`;
     const main = d.main ? `<span class="lbl">주옵</span>${esc(d.main.label)} ${esc(d.main.value)}` : "주옵 없음";
     let mainHtml = `<div class="main">${main}</div>`;
     if (d.mainOk === false) mainHtml = `<div class="main bad">${main}</div>`; // 권장 주옵은 아래 추천 주옵 칩에 있다
@@ -623,7 +625,7 @@
           ${engineSection(res)}
           ${skillSection(res)}
           ${setSection(res)}
-          <section><h3>장착 디스크</h3><div class="discs">${res.discs.map(discRow).join("")}</div>
+          <section><h3>장착 디스크</h3><div class="discs">${[...res.discs, ...res.empty].sort((a, b) => a.slot - b.slot).map(discRow).join("")}</div>
             <p class="fine" style="margin-top:8px">오른쪽 숫자는 유효한 부옵이 강화된 횟수이며, 가중치를 반영해서 계산합니다. 배경색이 있는 부옵이 유효 옵션이고, +n은 그 부옵이 강화된 횟수입니다.</p>${borrowed}</section>
           ${notes ? `<details open><summary>시트 원문 메모</summary><pre>${esc(notes)}</pre></details>` : ""}
           <div class="foot"><p class="fine">기준 시트 · <a href="${SHEET_URL}" target="_blank" rel="noopener">${esc(window.ZZZ_BENCHMARK.version || "")}</a></p>
