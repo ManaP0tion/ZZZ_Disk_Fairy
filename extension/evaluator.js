@@ -296,6 +296,16 @@
     return { level, text, mains, want: want.map(label), extra: extra.map(label), lack: lack.map(label) };
   }
 
+  // 이 세트를 권장하는 다른 에이전트. 에이전트마다 evaluate의 setRef와 같은 순서로 기준 탭을 고른다
+  function setUsers(bench, sel, suit, self) {
+    const refs = new Map();
+    for (const k of [sel, "good", "basic"]) {
+      for (const a of bench.tiers[k].agents) if (a.set4 && a.set4.length && !refs.has(a.name)) refs.set(a.name, a);
+    }
+    const users = (key) => [...refs.values()].filter((a) => a.name !== self && (a[key] || []).some((t) => setMatches(t, suit))).map((a) => a.name);
+    return { four: users("set4"), two: users("set2") };
+  }
+
   function evaluate(avatar, bench, sel, pick) {
     sel = sel || "good";
     const T = bench.tiers;
@@ -419,7 +429,7 @@
       statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, skills, discs, empty, stats, setInfo, tiers, advice, weights };
   }
 
-  const api = { evaluate, checkTier, statKey, setMatches, label, discCap, discGrade };
+  const api = { evaluate, checkTier, statKey, setMatches, setUsers, label, discCap, discGrade };
   root.ZZZEval = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -54,6 +54,17 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.ok(four.mains.every((m) => !m.on));
   console.log("빈 슬롯 안내 테스트 통과");
 }
+{ // 세트를 권장하는 다른 에이전트: 약칭도 인식하고, 자신은 빼고, 선택한 탭을 먼저 본다
+  const a = (name, set4, set2) => ({ name, set4, set2 });
+  const bench = { tiers: {
+    basic: { agents: [a("갑", ["카재"], []), a("정", ["카재"], [])] },
+    good: { agents: [a("갑", ["스윙 재즈"], ["카오스 재즈"]), a("을", ["카오스 재즈"], []), a("병", ["스윙 재즈"], [])] },
+    max: { agents: [a("병", ["카재"], [])] },
+  } };
+  assert.deepEqual(E.setUsers(bench, "good", "카오스 재즈", "을"), { four: ["정"], two: ["갑"] });
+  assert.deepEqual(E.setUsers(bench, "max", "카오스 재즈", "을"), { four: ["병", "정"], two: ["갑"] });
+  console.log("세트 사용 에이전트 테스트 통과");
+}
 // W-엔진 판정
 {
   const av = { ...fx.data.avatar_list[0], weapon: { name: "영롱한 금빛 마음", star: 1 } };
