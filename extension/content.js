@@ -289,6 +289,11 @@
   .setchip .ph { display: grid; place-items: center; font: 600 12px/1 var(--text); color: var(--ink-60); }
   .setchip .sn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .setchip.on { background: var(--valid-bg); border-color: transparent; color: var(--ink); font-weight: 600; }
+  /* 세트 툴팁: 브라우저 title은 지연이 있어 CSS로 바로 띄운다. 행 폭에 맞춰 패널 밖으로 나가지 않게 한다 */
+  .setcard { overflow: visible; }
+  .setcard .setrow { position: relative; }
+  .setchip[data-tip]:hover::after, .setchip[data-tip]:focus::after { content: attr(data-tip); position: absolute; left: 16px; right: 16px; top: calc(100% - 8px); z-index: 2;
+    padding: 8px 10px; border-radius: 8px; background: var(--ink); color: var(--on-ink); font: 400 12px/1.45 var(--text); white-space: pre-line; pointer-events: none; }
   .setchip .ck { font: 600 10px/1.3 var(--text); padding: 1px 6px; border-radius: 9999px; background: var(--ink); color: var(--on-ink); }
   details { display: grid; }
   summary { cursor: pointer; color: var(--primary); list-style: none; width: max-content; border-radius: 5px; }
@@ -376,7 +381,7 @@
   const SHORT = { "치명타 확률": "치확", "치명타 피해": "치피", "이상 마스터리": "이상마", "이상 장악력": "이상장악", "관통 수치": "관통" };
   const short = (l) => { const n = l.replace(/%$/, ""); return SHORT[n] || n; };
 
-  function setChips(tokens, equippedNames) {
+  function setChips(tokens, equippedNames, res) {
     return tokens
       .map((t) => {
         const r = resolveSuit(t);
@@ -384,7 +389,9 @@
         const img = r.icon
           ? `<img src="${esc(r.icon)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
           : `<span class="ph" aria-hidden="true">${esc(r.name.slice(0, 1))}</span>`;
-        return `<span class="setchip${on ? " on" : ""}" title="${esc(r.name)}">${img}<span class="sn">${esc(r.name)}</span>${on ? `<span class="ck">장착</span>` : ""}</span>`;
+        const u = window.ZZZEval.setUsers(window.ZZZ_BENCHMARK, res.selected, r.name, res.setRef.name);
+        const title = [r.name, u.four.length && `4세트: ${u.four.join(", ")}`, u.two.length && `2세트: ${u.two.join(", ")}`].filter(Boolean).join("\n");
+        return `<span class="setchip${on ? " on" : ""}" tabindex="0" data-tip="${esc(title)}">${img}<span class="sn">${esc(r.name)}</span>${on ? `<span class="ck">장착</span>` : ""}</span>`;
       })
       .join("");
   }
@@ -394,9 +401,9 @@
     if (!ref) return "";
     const si = res.setInfo;
     const rows = [];
-    if (ref.set4 && ref.set4.length) rows.push(`<div class="row setrow"><span class="pc">4세트</span><div class="chips">${setChips(ref.set4, si.four ? [si.four] : [])}</div></div>`);
-    if (ref.set2 && ref.set2.length) rows.push(`<div class="row setrow"><span class="pc">2세트</span><div class="chips">${setChips(ref.set2, si.twos)}</div></div>`);
-    return rows.length ? `<section><h3>권장 세트</h3><div class="card">${rows.join("")}</div></section>` : "";
+    if (ref.set4 && ref.set4.length) rows.push(`<div class="row setrow"><span class="pc">4세트</span><div class="chips">${setChips(ref.set4, si.four ? [si.four] : [], res)}</div></div>`);
+    if (ref.set2 && ref.set2.length) rows.push(`<div class="row setrow"><span class="pc">2세트</span><div class="chips">${setChips(ref.set2, si.twos, res)}</div></div>`);
+    return rows.length ? `<section><h3>권장 세트</h3><div class="card setcard">${rows.join("")}</div><p class="fine" style="margin-top:8px">세트에 커서를 올리면 그 세트를 권장하는 다른 에이전트가 표시됩니다.</p></section>` : "";
   }
 
   function engineSection(res) {
