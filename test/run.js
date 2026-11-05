@@ -141,10 +141,11 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   const e = [].concat(Object.values(B.tiers.good.agents)).find((x) => x.name === "미야비");
   const discs = (m) => [4, 5, 6].map((slot, i) => ({ slot, main: { key: m[i] } }));
   const crit = (rank, m) => E.checkTier(e, { CR: 90, CD: 150 }, { rank, discs: discs(m), setCounts: {}, weapon: null }, "좋음", "미야비").checks.find((x) => x.stat === "CR");
-  assert.equal(crit(2, ["ATK%", "PENR", "ATK%"]).need, 72);
+  const need = (text) => e.crit.find((x) => x.cond.text === text).CR; // 시트가 갱신돼도 깨지지 않게 데이터에서 읽는다
+  assert.equal(crit(2, ["ATK%", "PENR", "ATK%"]).need, need("2돌, 공관공"));
   assert.ok(!crit(2, ["ATK%", "PENR", "ATK%"]).assumed);
-  const c = crit(2, ["CR", "PENR", "ATK%"]); // 공관공이 아니면 2돌이어도 72/110을 쓰지 않는다
-  assert.equal(c.need, 87);
+  const c = crit(2, ["CR", "PENR", "ATK%"]); // 공관공이 아니면 2돌이어도 2돌 기준을 쓰지 않는다
+  assert.equal(c.need, need("명전, 치관공"));
   assert.ok(c.assumed && c.unknown); // "명전"은 판정할 수 없다
   console.log("복합 조건 테스트 통과");
 }
