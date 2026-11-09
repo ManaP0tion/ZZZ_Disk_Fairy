@@ -157,6 +157,7 @@
   .ag b { width: 100%; font: 600 12px/1.3 var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ag .gl { font: 400 11px/1.2 var(--text); color: var(--ink-60); white-space: nowrap; }
   .ag .gl.no { color: var(--fail); }
+  .ag.un .pic { opacity: 0.55; }
   .ag .gl.ok { color: var(--pass); }
   /* 필터: 평소엔 pill 버튼만, 펼치면 Parchment 판 위에 configurator-option-chip (선택 시 2px Action Blue 테두리) */
   /* 목록 맨 위 확장 이름: 팝업과 같은 아이콘 + 이름 */
@@ -496,10 +497,28 @@
   };
   const filt = {};
   let filtOpen = false;
+  // 미보유 에이전트도 목록에 넣는다: 시트 항목으로 디스크 없는 가상 에이전트를 만들어서, 빈 슬롯 추천(주옵·부옵)과 권장 세트·엔진을 보여 준다
+  // 기본은 표시, 필터에서 숨길 수 있다
+  const HIDE_KEY = "zzzDiscAdvisor.hideUnowned";
+  let showAll = true;
+  try { showAll = localStorage.getItem(HIDE_KEY) !== "1"; } catch (e) {}
+  const PROF_ID = Object.fromEntries(Object.entries(PROF).map(([id, [n]]) => [n, +id]));
+  let ghosts = null;
+  const list = () => {
+    if (!showAll) return roster;
+    ghosts = ghosts || window.ZZZEval.unowned(window.ZZZ_BENCHMARK, roster).map((e) => {
+      const a = { id: "x-" + e.name, name_mi18n: e.name, full_name_mi18n: e.name, unowned: true, equip: [], avatar_profession: PROF_ID[e.spec] };
+      // 위키 일러스트 원본은 장당 1MB 가까이 돼서, 목록 썸네일은 CDN(OSS) 리사이즈로 받는다 (약 10KB)
+      const img = wikiOf(a).img;
+      a.role_square_url = img && img + "?x-oss-process=image/resize,w_200/format,webp";
+      return a;
+    });
+    return roster.concat(ghosts);
+  };
   function facetHtml() {
-    return Object.entries(FACETS).map(([k, f]) => {
+    return `<div role="group" aria-label="보기"><span class="flabel">보기</span><div class="fchips"><button class="fchip t" id="fall" aria-pressed="${!showAll}">미보유 에이전트 숨기기</button></div></div>` + Object.entries(FACETS).map(([k, f]) => {
       const icons = new Map();
-      for (const a of roster) { const [v, i] = f(a); if (v && !icons.get(v)) icons.set(v, i); }
+      for (const a of list()) { const [v, i] = f(a); if (v && !icons.get(v)) icons.set(v, i); }
       if (icons.size < 2) return "";
       const vals = [...icons.keys()].sort((x, y) => x.localeCompare(y, "ko"));
       return `<div role="group" aria-label="${k}"><span class="flabel">${k}</span><div class="fchips">${vals.map((v) => {
@@ -511,10 +530,13 @@
   }
 
   // 리포트 모드 오른쪽 열: 위키 일러스트·소개 대사(data/agent-wiki.js) + 전적 페이지의 캐릭터 스탯 전체 (최종값, 아래에 기본 + 추가)
-  const nk = (s) => String(s || "").replace(/[\s·「」]/g, "");
+  // 위키 키는 풀네임이다. 미보유 에이전트는 시트 이름(짧은 이름)뿐이라, 풀네임의 한 단어("제인 도"의 "제인")나 별칭으로 찾는다
+  const nk = (s) => String(s || "").replace(/[\s·.「」]/g, "");
+  const WIKI_ALIAS = { S빌리: "스타라이트빌리", 루시: "루시아나드몬테피오", 네코마타: "네코미야마나", 리나: "알렉산드리나세바스티안" };
   function wikiOf(a) {
-    const W = window.ZZZ_AGENT_WIKI || {};
-    const k = Object.keys(W).find((n) => nk(n) === nk(a.full_name_mi18n)) || Object.keys(W).find((n) => nk(n) === nk(a.name_mi18n));
+    const W = window.ZZZ_AGENT_WIKI || {}, keys = Object.keys(W), short = nk(a.name_mi18n);
+    const k = keys.find((n) => nk(n) === nk(a.full_name_mi18n)) || keys.find((n) => nk(n) === (WIKI_ALIAS[short] || short)) ||
+      keys.find((n) => n.split(" ").some((w) => nk(w) === short));
     return k ? W[k] : {};
   }
   // 스탯 아이콘: 전적 페이지 번들의 ZzzGamePanel* (property_id 기준, 속성 피해 보너스는 이름으로)
@@ -579,21 +601,22 @@
 
   // 리포트 모드 왼쪽 목록: 선택한 등급 기준 달성 여부와 교체할 디스크 수
   function navHtml() {
-    const shown = roster.filter((a) => Object.entries(filt).every(([k, v]) => FACETS[k](a)[0] === v));
+    const all = list();
+    const shown = all.filter((a) => Object.entries(filt).every(([k, v]) => FACETS[k](a)[0] === v));
     const on = Object.keys(filt).length;
     const items = shown.map((a) => {
       const r = window.ZZZEval.evaluate(a, window.ZZZ_BENCHMARK, tier);
       const t = r.tiers[r.selected].result;
-      const goal = !t || t.pass === null ? "기준 없음" : t.pass ? "목표 달성" : `${t.checks.filter((c) => c.gap > 0).length}개 부족`;
+      const goal = a.unowned ? "미보유" : !t || t.pass === null ? "기준 없음" : t.pass ? "목표 달성" : `${t.checks.filter((c) => c.gap > 0).length}개 부족`;
       const swap = r.discs.filter((d) => d.tip.level === "high" || d.grade.key === "bad").length;
       const pic = a.role_square_url ? `<img src="${esc(a.role_square_url)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="ph" aria-hidden="true">${esc(String(a.name_mi18n).slice(0, 1))}</span>`;
-      return `<a class="ag${a === lastAvatar ? " on" : ""}" href="#${esc(a.id)}" title="${esc(`${a.name_mi18n} · ${goal}${swap ? ` · 디스크 ${swap}개 교체` : ""}`)}"${a === lastAvatar ? ' aria-current="page"' : ""}>` +
+      return `<a class="ag${a === lastAvatar ? " on" : ""}${a.unowned ? " un" : ""}" href="#${esc(a.id)}" title="${esc(`${a.name_mi18n} · ${goal}${swap ? ` · 디스크 ${swap}개 교체` : ""}`)}"${a === lastAvatar ? ' aria-current="page"' : ""}>` +
         `<span class="pic">${pic}${rankBadge(a)}` +
         `${a.level ? `<span class="lv">Lv. ${esc(a.level)}</span>` : ""}</span>` +
         `<b>${esc(a.name_mi18n)}</b><span class="gl${t && t.pass === false ? " no" : t && t.pass ? " ok" : ""}">${esc(goal)}</span></a>`;
     }).join("");
     return `<nav aria-label="에이전트 목록"><div class="brand"><img src="${chrome.runtime.getURL("icons/icon48.png")}" alt=""><b>디스크 페어리</b></div><div class="fbar"><button class="hbtn fbtn" id="filt" aria-expanded="${filtOpen}">필터${on ? `<span class="badge">${on}</span>` : ""}</button>` +
-      `<span class="fine">${shown.length} / ${roster.length}명</span>${on ? `<button class="flink" id="freset">초기화</button>` : ""}</div>` +
+      `<span class="fine">${shown.length} / ${all.length}명</span>${on ? `<button class="flink" id="freset">초기화</button>` : ""}</div>` +
       (filtOpen ? `<div class="fpanel">${facetHtml()}</div>` : "") +
       `<div class="ags">${items || `<p class="fine" style="grid-column:1/-1">조건에 맞는 에이전트가 없습니다.</p>`}</div></nav>`;
   }
@@ -603,7 +626,7 @@
     const minimized = !!shadow.querySelector(".panel.min");
     const ref = res.ref;
     const notes = ref ? [ref.targetsRaw && `목표: ${ref.targetsRaw}`, ref.critRaw && `치명타: ${ref.critRaw}`, ref.note].filter(Boolean).join("\n") : "";
-    const advice = res.advice.filter((a) => !/기준까지:|모두 달성/.test(a.text));
+    const advice = res.advice.filter((a) => !/기준까지:|모두 달성/.test(a.text) && !(lastAvatar.unowned && /슬롯 비어 있음/.test(a.text)));
     const adviceHtml = advice.length
       ? advice.map((a) => `<div class="row adv ${a.level}"><span class="tag">${TAG[a.level]}</span><p>${esc(a.text)}</p></div>`).join("")
       : `<div class="row"><p class="muted" style="margin:0">바꿀 디스크가 없습니다.</p></div>`;
@@ -626,8 +649,7 @@
         <div class="body">
           ${res.matched ? "" : `<p class="fine">시트에서 이 에이전트를 찾지 못했습니다. 전적 페이지에 표시된 이름: “${esc(lastAvatar.name_mi18n)}” / “${esc(lastAvatar.full_name_mi18n)}” (id ${esc(lastAvatar.id)})</p>`}
           <section><div class="segs" role="group" aria-label="평가 기준">${["basic", "good", "max"].map((k) => seg(k, res.tiers[k], res.selected)).join("")}</div></section>
-          ${summary(res)}
-          ${goalBoxes(res)}
+          ${lastAvatar.unowned ? `<div class="summary"><div class="big">보유하지 않은 에이전트</div><p class="fine">시트의 권장 세팅만 보여 줍니다. 디스크 카드의 추천 주옵·부옵을 보고 미리 준비해 두세요.</p></div>` : summary(res) + goalBoxes(res)}
           <section><h3>조언</h3><div class="card">${adviceHtml}</div></section>
           ${engineSection(res)}
           ${skillSection(res)}
@@ -656,6 +678,12 @@
       shadow.querySelectorAll(".sgrip").forEach(sideGrip);
       const again = () => render(window.ZZZEval.evaluate(lastAvatar, window.ZZZ_BENCHMARK, tier, pick));
       shadow.getElementById("filt").onclick = () => { filtOpen = !filtOpen; again(); };
+      const fall = shadow.getElementById("fall");
+      if (fall) fall.onclick = () => {
+        showAll = !showAll;
+        try { localStorage.setItem(HIDE_KEY, showAll ? "0" : "1"); } catch (e) {}
+        if (!showAll && lastAvatar.unowned) location.hash = roster[0].id; else again();
+      };
       const reset = shadow.getElementById("freset");
       if (reset) reset.onclick = () => { for (const k in filt) delete filt[k]; again(); };
     }
@@ -719,7 +747,7 @@
     const RECORD = "https://act.hoyolab.com/app/zzz-game-record/";
     const retry = `<br><a href="${RECORD}" target="_blank" rel="noopener">전적 페이지</a>에서 로그인을 확인한 뒤 이 탭을 새로고침하세요.`;
     const route = () => {
-      const a = roster.find((x) => String(x.id) === location.hash.slice(1)) || roster[0];
+      const a = list().find((x) => String(x.id) === decodeURIComponent(location.hash.slice(1))) || roster[0];
       if (a && a !== lastAvatar) show(a);
     };
     window.addEventListener("hashchange", route);

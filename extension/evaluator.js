@@ -429,7 +429,14 @@
       statFrom: tierLabelOf(statRef), setFrom: tierLabelOf(setRef), setRef, engine, skills, discs, empty, stats, setInfo, tiers, advice, weights };
   }
 
-  const api = { evaluate, checkTier, statKey, setMatches, setUsers, label, discCap, discGrade };
+  // 시트에는 있지만 보유 목록(roster)에 없는 에이전트. 이잘키 → 응애 → 악귀 탭 순으로 이름을 모은다
+  function unowned(bench, roster) {
+    const seen = new Map();
+    for (const k of ["good", "basic", "max"]) for (const a of bench.tiers[k].agents) if (!seen.has(a.name)) seen.set(a.name, a);
+    return [...seen.values()].filter((e) => !roster.some((a) => findAgent({ agents: [e] }, a)));
+  }
+
+  const api = { evaluate, checkTier, statKey, setMatches, setUsers, unowned, label, discCap, discGrade };
   root.ZZZEval = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

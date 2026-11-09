@@ -18,10 +18,20 @@
   button.sub { margin-top: 16px; background: transparent; color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
   button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   button:active { transform: scale(0.97); }
+  #notes { margin-top: 16px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--ink-60) 30%, transparent); }
+  #notes h2 { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+  #notes ul { margin: 0; padding-left: 18px; color: var(--ink-60); }
 </style>
 <div class="top"><img src="icons/icon48.png" alt=""><h1>ZZZ 디스크 페어리 <span id="ver"></span></h1></div>
 <p>마스터, HoYoLAB 전적 페이지에서 에이전트를 선택해 주세요. 디스크 분석은 페어리가 맡겠습니다</p>
 <button id="report"><img src="icons/zzz.png" alt="">전체 에이전트 분석</button>
 <button id="go" class="sub">전적 페이지에서 분석하기</button>
+<!-- 패치노트: 버전이 바뀐 뒤 처음 연 팝업에서만 보인다 (popup.js). 릴리스마다 data-ver와 내용을 갱신할 것 -->
+<section id="notes" data-ver="1.2.8" hidden>
+  <h2>v1.2.8 패치노트</h2>
+  <ul>
+    <li>전체 분석에 보유하지 않은 에이전트도 표시합니다. 권장 디스크·W-엔진 세팅을 미리 보고 준비할 수 있습니다. (필터의 “미보유 에이전트 숨기기”로 숨길 수 있습니다)</li>
+  </ul>
+</section>
 <script src="popup.js"></script>
 </html>
