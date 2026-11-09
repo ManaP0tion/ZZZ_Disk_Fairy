@@ -149,3 +149,11 @@ console.log("ADVICE:"); r.advice.forEach((a) => console.log(" [" + a.level + "] 
   assert.ok(c.assumed && c.unknown); // "명전"은 판정할 수 없다
   console.log("복합 조건 테스트 통과");
 }
+{ // 미보유 에이전트: 보유한 에이전트는 빠지고, 디스크 없이 평가하면 6개 슬롯 모두 추천이 나온다
+  const av = fx.data.avatar_list[0];
+  const un = E.unowned(B, [av]);
+  assert.ok(un.length > 0 && !un.some((e) => e.name === av.name_mi18n));
+  const r = E.evaluate({ id: "x", name_mi18n: un[0].name, full_name_mi18n: un[0].name, equip: [] }, B, "good");
+  assert.ok(r.matched);
+  assert.equal(r.empty.length, 6);
+}

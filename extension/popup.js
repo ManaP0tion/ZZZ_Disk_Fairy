@@ -18,3 +18,11 @@ document.getElementById("report").onclick = async () => {
   window.close();
 };
 document.getElementById("ver").textContent = "v" + chrome.runtime.getManifest().version;
+// 패치노트: 이 버전의 노트가 있고 아직 안 봤으면 한 번만 보여 준다
+const notes = document.getElementById("notes"), ver = chrome.runtime.getManifest().version;
+try {
+  if (notes.dataset.ver === ver && localStorage.getItem("seenNotes") !== ver) {
+    notes.hidden = false;
+    localStorage.setItem("seenNotes", ver);
+  }
+} catch (e) {}
